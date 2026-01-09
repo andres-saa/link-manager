@@ -1,0 +1,33 @@
+{
+  "folders": [
+    {
+      "id": "default",
+      "name": "General"
+    },
+    {
+      "id": "e3735ffd",
+      "name": "nueva"
+    }
+  ],
+  "screens": [],
+  "assets": [
+    {
+      "id": "833d41b55c",
+      "name": "6ee9a2bd-8dee-46be-90a2-a0d724736dce.jpg",
+      "url": "/assets/833d41b55c.jpg",
+      "kind": "image"
+    },
+    {
+      "id": "e6543f31c6",
+      "name": "607440972_1501580671967088_291045622906432195_n.jpg",
+      "url": "/assets/e6543f31c6.jpg",
+      "kind": "image"
+    },
+    {
+      "id": "f4ee85ee0b",
+      "name": "dea5259d-a4b6-4a23-9173-c34125a864fd.jpg",
+      "url": "/assets/f4ee85ee0b.jpg",
+      "kind": "image"
+    }
+  ]
+}

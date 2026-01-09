@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>{{ screen.title }}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  {% set th = screen.theme or {} %}
+
+  {% set text_color = th.text_color|default('#ffffff', true) %}
+  {% set card_color = th.card_color|default('rgba(255,255,255,0.10)', true) %}
+  {% set card_border = th.card_border|default('rgba(255,255,255,0.14)', true) %}
+  {% set card_radius = th.card_radius|default(22, true) %}
+
+  {% set btn_bg = th.btn_bg|default('rgba(255,255,255,0.12)', true) %}
+  {% set btn_text = th.btn_text|default('#ffffff', true) %}
+  {% set btn_border = th.btn_border|default('rgba(255,255,255,0.16)', true) %}
+  {% set btn_radius = th.btn_radius|default(18, true) %}
+
+  {% set overlay_opacity = th.bg_overlay_opacity|default(0.35, true) %}
+  {% set overlay_color = th.bg_overlay_color|default('#000000', true) %}
+  {% set bg_blur = th.bg_blur_px|default(0, true) %}
+  {% set bg_zoom = th.bg_zoom|default(1.0, true) %}
+
+  {% set bg_type = th.bg_type|default('color', true) %}
+  {% set raw_bg = th.bg_value|default('#0f172a', true) %}
+
+  {% if bg_type == 'image_url' or bg_type == 'image_asset' %}
+    {% if raw_bg and raw_bg.startswith('url(') %}
+      {% set bg_css = raw_bg %}
+    {% else %}
+      {% set bg_css = "url('" ~ raw_bg ~ "')" %}
+    {% endif %}
+  {% else %}
+    {% set bg_css = raw_bg %}
+  {% endif %}
+
+  {# =========================
+     ✅ BRAND PARAMS (logo, title, subtitle)
+     Puedes pasar:
+       screen.brand = { logo_type, logo_value, title, subtitle }
+     o usar screen.title / screen.subtitle
+  ========================= #}
+  {% set brand = screen.brand or {} %}
+
+  {% set header_title = brand.title|default(screen.title|default('Enlaces', true), true) %}
+  {% set header_subtitle = brand.subtitle|default(screen.subtitle|default('Enlaces rápidos • estilo corporativo', true), true) %}
+
+  {# Logo: emoji | asset | image_url
+     - emoji: "✨"
+     - asset/image_url: url directa o url("...") (normaliza)
+  #}
+  {% set logo_type = brand.logo_type|default('emoji', true) %}
+  {% set raw_logo = brand.logo_value|default('✨', true) %}
+
+  {% if logo_type in ['asset','image_url'] %}
+    {% set logo_src = raw_logo
+        |replace('url("','')
+        |replace("url('",'')
+        |replace('url(','')
+        |replace('")','')
+        |replace("')",'')
+        |replace(')','')
+    %}
+  {% endif %}
+
+  <style>
+    :root{
+      --text: {{ text_color }};
+      --card-bg: {{ card_color }};
+      --card-border: {{ card_border }};
+      --card-radius: {{ card_radius }}px;
+
+      --btn-bg: {{ btn_bg }};
+      --btn-text: {{ btn_text }};
+      --btn-border: {{ btn_border }};
+      --btn-radius: {{ btn_radius }}px;
+
+      --overlay-opacity: {{ overlay_opacity }};
+      --overlay-color: {{ overlay_color }};
+      --bg-blur: {{ bg_blur }}px;
+      --bg-zoom: {{ bg_zoom }};
+    }
+
+    body{
+      color: var(--text);
+      min-height: 100vh;
+      margin:0;
+      display:flex;
+      justify-content:center;
+      padding: 28px 18px;
+      font-family: ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji";
+      position: relative;
+      overflow-x:hidden;
+      background: transparent;
+    }
+
+    .bg-layer{
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      transform: scale(var(--bg-zoom));
+      filter: blur(var(--bg-blur));
+      will-change: transform, filter;
+      background: {{ bg_css|safe }};
+      background-color: #0f172a; /* fallback si falla la imagen */
+    }
+
+    {% if bg_type == 'image_url' or bg_type == 'image_asset' %}
+      .bg-layer{
+        background-repeat: no-repeat;
+        background-size: cover;
+        background-position: center;
+      }
+    {% endif %}
+
+    .overlay{
+      position: fixed;
+      inset:0;
+      z-index:-1;
+      background: var(--overlay-color);
+      opacity: var(--overlay-opacity);
+      pointer-events: none;
+    }
+
+    .glass{
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--card-radius);
+      backdrop-filter: blur(12px);
+    }
+
+    .link-btn{
+      background: var(--btn-bg);
+      color: var(--btn-text);
+      border: 1px solid var(--btn-border);
+      border-radius: var(--btn-radius);
+      transition: transform .15s ease, filter .15s ease, box-shadow .15s ease;
+      text-decoration: none;
+      outline: none;
+    }
+    .link-btn:hover{ transform: translateY(-1px) scale(1.01); filter: brightness(1.08); }
+    .link-btn:active{ transform: translateY(0px) scale(0.995); filter: brightness(1.02); }
+    .link-btn:focus-visible{
+      box-shadow: 0 0 0 3px rgba(59,130,246,.25);
+      border-color: rgba(59,130,246,.65);
+    }
+
+    .icon-img{
+      width: 26px;
+      height: 26px;
+      object-fit: contain;
+      filter: drop-shadow(0 4px 10px rgba(0,0,0,.35));
+    }
+
+    .logo-img{
+      width: 32px;
+      height: 32px;
+      object-fit: contain;
+      filter: drop-shadow(0 4px 10px rgba(0,0,0,.35));
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-layer"></div>
+  <div class="overlay"></div>
+
+  <main class="w-full max-w-md flex flex-col items-center gap-5">
+
+    <div class="w-full glass p-5 flex items-center gap-4 shadow-xl">
+      <div class="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center text-2xl border border-white/10 overflow-hidden">
+        {% if logo_type in ['asset','image_url'] %}
+          <img class="logo-img" src="{{ logo_src }}" alt="logo" loading="lazy" decoding="async">
+        {% else %}
+          <span class="text-2xl">{{ raw_logo }}</span>
+        {% endif %}
+      </div>
+
+      <div class="flex-1 min-w-0">
+        <h1 class="text-xl font-extrabold leading-tight truncate">{{ header_title }}</h1>
+        <p class="text-xs opacity-70 truncate">{{ header_subtitle }}</p>
+      </div>
+    </div>
+
+    <div class="w-full flex flex-col gap-3">
+      {% for link in (screen.links or []) %}
+        {% set st = link.style or {} %}
+        {% set bg = st.get('bg') %}
+        {% set tx = st.get('text') %}
+        {% set bd = st.get('border') %}
+        {% set rd = st.get('radius') %}
+
+        {% set icon_type = link.icon_type|default('emoji', true) %}
+        {% set raw_icon = link.icon_value|default('🔗', true) %}
+
+        {% if icon_type == 'asset' %}
+          {% set icon_src = raw_icon
+              |replace('url("','')
+              |replace("url('",'')
+              |replace('url(','')
+              |replace('")','')
+              |replace("')",'')
+              |replace(')','')
+          %}
+        {% endif %}
+
+        <a href="{{ link.url }}" target="_blank" rel="noopener"
+           class="link-btn w-full px-4 py-4 flex items-center gap-3 shadow-lg"
+           style="
+             {% if bg %} background: {{ bg }}; {% endif %}
+             {% if tx %} color: {{ tx }}; {% endif %}
+             {% if bd %} border-color: {{ bd }}; {% endif %}
+             {% if rd is not none %} border-radius: {{ rd }}px; {% endif %}
+           ">
+
+          <div class="w-10 h-10 rounded-xl bg-black/20 border border-white/10 flex items-center justify-center overflow-hidden">
+            {% if icon_type == 'asset' %}
+              <img class="icon-img" src="{{ icon_src }}" alt="icon" loading="lazy" decoding="async">
+            {% else %}
+              <span class="text-xl">{{ raw_icon }}</span>
+            {% endif %}
+          </div>
+
+          <div class="flex-1 min-w-0">
+            <div class="font-bold text-base leading-tight truncate">{{ link.label }}</div>
+          </div>
+
+          <span class="opacity-60">➜</span>
+        </a>
+      {% endfor %}
+    </div>
+
+    <footer class="mt-6 text-xs opacity-60">
+      © Andres Arrechea | Arhook web
+    </footer>
+
+  </main>
+</body>
+</html>
