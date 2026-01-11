@@ -66,6 +66,7 @@
     ::-webkit-scrollbar-track { background: rgba(15, 23, 42, .65); }
     ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, .22); border-radius: 999px; }
     ::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, .35); }
+        .logo { height: 3rem; }
   </style>
 </head>
 
@@ -85,9 +86,11 @@
 
         <!-- Header sidebar -->
         <div class="flex items-center justify-between gap-3">
+                      <img class="logo" src="https://gestion.salchimonster.com/images/logo.png" alt="">
+
           <div class="min-w-0">
-            <div class="text-xs text-text-muted">Enterprise</div>
-            <div class="text-lg font-black tracking-wide truncate">LINK MANAGER</div>
+            <!-- <div class="text-xs text-text-muted">Enterprise</div> -->
+            <div class="text-lg font-black tracking-wide truncate">PANTALLAS SALCHI</div>
           </div>
           <span class="px-2.5 py-1 text-xs font-black rounded-btn bg-primary/15 text-primary">v2</span>
         </div>
@@ -212,6 +215,11 @@
               class="rounded-btn px-4 py-2 text-sm font-black bg-primary hover:bg-primary-hover transition shadow-soft2">
               <i class="bi bi-plus-lg mr-2"></i>Crear Pantalla
             </button>
+          <a href="/auth/logout?next=/"
+   class="rounded-btn px-4 py-2 text-sm font-black bg-danger-soft text-danger hover:bg-red-500/20 transition shadow-soft2"
+   title="Cerrar sesión">
+  <i class="bi bi-box-arrow-right mr-2"></i>Salir
+</a>
           </div>
         </div>
       </header>

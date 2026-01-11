@@ -106,5 +106,17 @@
       "url": "/assets/c569fda2c3.png",
       "kind": "image"
     }
-  ]
+  ],
+  "sessions": {
+    "54dff4d2fbe3ea3662b23906fdaac5e729a7f175fe14f06cc95ade805159cf44": {
+      "user": "admin",
+      "created_at": 1768097873,
+      "expires_at": 1768141073
+    },
+    "1363dc46c7f19c48e8c3a7087c345e5c98936b9c46eeae97963d1c7da4fbc88d": {
+      "user": "admin",
+      "created_at": 1768098693,
+      "expires_at": 1768141893
+    }
+  }
 }
