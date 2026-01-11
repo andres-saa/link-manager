@@ -1,1504 +1,1599 @@
 <!DOCTYPE html>
 <html lang="es" class="dark">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <title>Gestor Corporativo</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        /* ===== Flat + moderno (sin bordes) ===== */
-        :root {
-            --r: .3rem;
-            /* ✅ máximo .3rem */
-            --r-2: 1.5rem;
-            /* ✅ máximo .3rem */
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Gestor Corporativo - Link Manager</title>
 
-            --bg: #0b1220;
-            --sidebar: #0c1426;
-            --surface: #111a2e;
-            --surface-2: #0e172b;
-            --muted: rgba(229, 231, 235, .65);
-            --muted2: rgba(229, 231, 235, .45);
-            --primary: #3b82f6;
-            --primary2: rgba(59, 130, 246, .18);
-            --danger: #ef4444;
-            --shadow: 0 10px 24px rgba(0, 0, 0, .35);
-            --shadow-sm: 0 6px 14px rgba(0, 0, 0, .25);
-        }
+  <!-- Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-        * {
-            box-sizing: border-box;
-        }
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-        body {
-            background: var(--bg);
-            color: #e5e7eb;
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: {
+            dark: {
+              body: '#0f172a',
+              card: '#1e293b',
+            },
+            primary: {
+              DEFAULT: '#8b5cf6',
+              hover: '#7c3aed',
+            },
+            text: {
+              main: '#f8fafc',
+              muted: '#94a3b8',
+            },
+            danger: {
+              DEFAULT: '#ef4444',
+              soft: 'rgba(239, 68, 68, 0.14)'
+            }
+          },
+          borderRadius: {
+            // ✅ más moderno (sin “cuadritos”)
+            card: '1.25rem',
+            card2: '1rem',
+            btn: '0.95rem',
+            input: '0.95rem',
+          },
+          boxShadow: {
+            soft: '0 16px 40px rgba(0,0,0,.45)',
+            soft2: '0 10px 26px rgba(0,0,0,.35)',
+            hover: '0 20px 55px rgba(0,0,0,.55)',
+            inset: 'inset 0 0 0 1px rgba(255,255,255,.06)'
+          }
         }
+      }
+    }
+  </script>
 
-        /* helpers */
-        .r {
-            border-radius: var(--r) !important;
-        }
-
-        .r-2 {
-            border-radius: var(--r-2) !important;
-        }
-
-        .panel {
-            background: var(--surface);
-            border: none !important;
-            box-shadow: var(--shadow-sm);
-        }
-
-        .panel-soft {
-            background: var(--surface-2);
-            border: none !important;
-        }
-
-        .sidebar {
-            background: var(--sidebar);
-            border: none !important;
-            box-shadow: var(--shadow);
-        }
-
-        .pill {
-            background: rgba(255, 255, 255, .06);
-            border: none !important;
-        }
-
-        .input {
-            background: rgba(255, 255, 255, .06);
-            border: none !important;
-            color: #fff;
-            border-radius: var(--r);
-        }
-
-        .input:focus {
-            outline: none;
-            box-shadow: 0 0 0 3px var(--primary2);
-        }
-
-        .active-folder {
-            background: rgba(59, 130, 246, .20) !important;
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, .18) inset;
-        }
-
-        .mini {
-            font-size: 11px;
-        }
-
-        /* scrollbars (opcionales) */
-        ::-webkit-scrollbar {
-            width: 10px;
-            height: 10px;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, .10);
-            border-radius: 999px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-    </style>
+  <style>
+    body {
+      background:
+        radial-gradient(900px 520px at 15% 10%, rgba(139, 92, 246, .12), transparent 60%),
+        radial-gradient(800px 520px at 80% 0%, rgba(14, 165, 233, .10), transparent 55%),
+        #0f172a;
+    }
+    ::-webkit-scrollbar { width: 10px; height: 10px; }
+    ::-webkit-scrollbar-track { background: rgba(15, 23, 42, .65); }
+    ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, .22); border-radius: 999px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, .35); }
+  </style>
 </head>
 
-<body class="h-screen overflow-hidden font-sans">
-    <div class="flex h-full">
+<body class="text-text-main font-sans h-screen overflow-hidden antialiased">
+  <div class="h-full flex">
 
-        <!-- Sidebar -->
-        <aside class="sidebar w-72 flex flex-col p-5 gap-4">
-            <div class="flex items-center justify-between">
+    <!-- Overlay móvil -->
+    <div id="sidebarOverlay" class="hidden fixed inset-0 z-40 bg-black/70 backdrop-blur-[2px]" onclick="closeSidebar()"></div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar"
+      class="fixed lg:static z-50 inset-y-0 left-0 w-[19rem] sm:w-80 lg:w-72
+             bg-dark-body/55 backdrop-blur-xl shadow-soft
+             transform -translate-x-full lg:translate-x-0 transition-transform duration-200
+             flex flex-col">
+      <div class="p-4 lg:p-5 flex flex-col gap-4 h-full">
+
+        <!-- Header sidebar -->
+        <div class="flex items-center justify-between gap-3">
+          <div class="min-w-0">
+            <div class="text-xs text-text-muted">Enterprise</div>
+            <div class="text-lg font-black tracking-wide truncate">LINK MANAGER</div>
+          </div>
+          <span class="px-2.5 py-1 text-xs font-black rounded-btn bg-primary/15 text-primary">v2</span>
+        </div>
+
+        <!-- Tabs -->
+        <div class="grid grid-cols-2 gap-2">
+          <button id="tabScreens" type="button" onclick="switchTab('screens')"
+            class="tabbtn px-3 py-2 rounded-btn text-sm font-extrabold bg-white/5 hover:bg-white/10 transition">
+            <i class="bi bi-layout-text-window-reverse mr-2"></i>Pantallas
+          </button>
+          <button id="tabAssets" type="button" onclick="switchTab('assets')"
+            class="tabbtn px-3 py-2 rounded-btn text-sm font-extrabold bg-white/5 hover:bg-white/10 transition">
+            <i class="bi bi-images mr-2"></i>Assets
+          </button>
+        </div>
+
+        <!-- Screens panel -->
+        <div id="screensTab" class="flex-1 flex flex-col gap-3 min-h-0">
+          <div class="text-xs uppercase tracking-widest text-text-muted">Carpetas</div>
+
+          <div class="flex-1 min-h-0 overflow-y-auto space-y-2 pr-1" id="folderList">
+            {% for f in folders %}
+            <div
+              onclick="selectFolder('{{ f.id }}', this)"
+              data-id="{{ f.id }}"
+              class="folder-item group cursor-pointer rounded-card2 px-3 py-2
+                     bg-white/5 hover:bg-white/10 transition flex items-center justify-between gap-3">
+              <span class="truncate text-sm font-semibold">
+                <span class="opacity-80">📁</span> {{ f.name }}
+              </span>
+
+              {% if f.id != 'default' %}
+              <button type="button"
+                onclick="deleteFolder('{{ f.id }}', event)"
+                class="opacity-70 hover:opacity-100 text-danger transition"
+                title="Eliminar carpeta">
+                <i class="bi bi-trash"></i>
+              </button>
+              {% endif %}
+            </div>
+            {% endfor %}
+          </div>
+
+          <button type="button" onclick="createFolder()"
+            class="rounded-btn px-3 py-2 text-sm font-extrabold bg-white/6 hover:bg-white/10 transition">
+            <i class="bi bi-folder-plus mr-2"></i>Nueva carpeta
+          </button>
+        </div>
+
+        <!-- Assets panel -->
+        <div id="assetsTab" class="hidden flex-1 flex flex-col gap-3 min-h-0">
+          <div class="text-xs uppercase tracking-widest text-text-muted">Assets reutilizables</div>
+
+          <div class="rounded-card border-0 bg-white/5 shadow-soft2 p-3">
+            <div class="text-xs text-text-muted mb-2">Subir imagen (PNG/JPG/WEBP)</div>
+            <input id="assetFile" type="file" accept="image/*"
+              class="w-full text-xs file:mr-3 file:px-3 file:py-2 file:rounded-btn file:border-0
+                     file:bg-primary/15 file:text-primary file:font-black
+                     text-text-muted" />
+            <button type="button" onclick="uploadAsset()"
+              class="mt-3 w-full rounded-btn py-2 text-sm font-black bg-primary hover:bg-primary-hover transition shadow-soft2">
+              Subir
+            </button>
+          </div>
+
+          <div class="flex items-center justify-between">
+            <div class="text-xs uppercase tracking-widest text-text-muted mt-2">Galería</div>
+            <button type="button" onclick="refreshAssets()"
+              class="text-xs px-3 py-1.5 rounded-btn bg-white/5 hover:bg-white/10 transition">
+              <i class="bi bi-arrow-clockwise mr-1"></i>Refrescar
+            </button>
+          </div>
+
+          <div id="assetsGrid" class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-3 gap-2 overflow-y-auto pr-1 min-h-0"></div>
+
+          <div class="text-xs text-text-muted/80">
+            Tip: usa los assets como fondo e íconos sin volver a subir.
+          </div>
+        </div>
+
+        <!-- Footer sidebar (mobile close) -->
+        <div class="lg:hidden">
+          <button type="button" onclick="closeSidebar()"
+            class="w-full rounded-btn px-3 py-2 text-sm font-extrabold bg-white/6 hover:bg-white/10 transition">
+            <i class="bi bi-x-lg mr-2"></i>Cerrar
+          </button>
+        </div>
+
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="flex-1 flex flex-col min-w-0 h-full">
+      <!-- Topbar -->
+      <header class="bg-dark-body/45 backdrop-blur-xl sticky top-0 z-30 shadow-soft2">
+        <div class="px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3 min-w-0">
+            <button type="button"
+              class="lg:hidden rounded-btn px-3 py-2 bg-white/6 hover:bg-white/10 transition"
+              onclick="openSidebar()"
+              title="Abrir menú">
+              <i class="bi bi-list text-lg"></i>
+            </button>
+
+            <div class="min-w-0">
+              <div class="text-xs text-text-muted">Carpeta actual</div>
+              <div id="currentFolderName" class="text-lg font-extrabold truncate">General</div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="switchTab('screens')"
+              class="lg:hidden rounded-btn px-3 py-2 text-sm font-black bg-white/6 hover:bg-white/10 transition">
+              <i class="bi bi-layout-text-window-reverse mr-2"></i>Pantallas
+            </button>
+            <button type="button" onclick="switchTab('assets')"
+              class="lg:hidden rounded-btn px-3 py-2 text-sm font-black bg-white/6 hover:bg-white/10 transition">
+              <i class="bi bi-images mr-2"></i>Assets
+            </button>
+
+            <button type="button" onclick="createNewScreen()"
+              class="rounded-btn px-4 py-2 text-sm font-black bg-primary hover:bg-primary-hover transition shadow-soft2">
+              <i class="bi bi-plus-lg mr-2"></i>Crear Pantalla
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Content -->
+      <div class="flex-1 min-h-0 p-4 sm:p-6 overflow-y-auto">
+        <div id="screensGrid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5"></div>
+      </div>
+
+      <!-- Modal editor -->
+      <div id="editModal" class="hidden fixed inset-0 z-[70] bg-black/70 backdrop-blur-[2px]">
+        <div class="absolute inset-0 flex flex-col lg:flex-row">
+
+          <!-- Left editor -->
+          <div class="w-full lg:max-w-xl h-[55vh] lg:h-full overflow-y-auto bg-dark-body/55 backdrop-blur-xl shadow-soft">
+            <div class="p-4 sm:p-6">
+              <div class="flex items-start justify-between gap-3 mb-5">
                 <div>
-                    <div class="text-xs opacity-70">Enterprise</div>
-                    <div class="text-lg font-black tracking-wide">LINK MANAGER</div>
+                  <div class="text-xs text-text-muted">Editor</div>
+                  <div class="text-xl font-black">Pantalla</div>
                 </div>
-                <span class="pill r text-xs px-2 py-1">v2</span>
-            </div>
+                <button type="button" onclick="closeModal()" class="text-2xl opacity-70 hover:opacity-100 transition">✕</button>
+              </div>
 
-            <!-- Tabs -->
-            <div class="flex gap-2">
-                <button id="tabScreens" onclick="switchTab('screens')"
-                    class="flex-1 pill r py-2 text-sm font-bold hover:brightness-110 transition">
-                    Pantallas
-                </button>
-                <button id="tabAssets" onclick="switchTab('assets')"
-                    class="flex-1 pill r py-2 text-sm font-bold hover:brightness-110 transition">
-                    Assets
-                </button>
-            </div>
+              <input type="hidden" id="screenId" />
 
-            <!-- Screens panel -->
-            <div id="screensTab" class="flex-1 flex flex-col gap-3">
-                <div class="text-xs uppercase tracking-widest opacity-70">Carpetas</div>
+              <!-- BASICS -->
+              <div class="rounded-card bg-white/5 shadow-soft2 p-4 space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label class="text-xs uppercase text-text-muted font-black">Carpeta</label>
+                    <select id="screenFolderId"
+                      class="mt-1 w-full rounded-input bg-black/20 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 shadow-inset">
+                      {% for f in folders %}
+                      <option value="{{ f.id }}">{{ f.name }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
 
-                <div class="flex-1 overflow-y-auto space-y-2" id="folderList">
-                    {% for f in folders %}
-                    <div onclick="selectFolder('{{ f.id }}', this)"
-                        class="folder-item r cursor-pointer px-3 py-2 flex justify-between items-center hover:brightness-110 transition"
-                        style="background: rgba(255,255,255,.05);" data-id="{{ f.id }}">
-                        <span class="truncate">📁 {{ f.name }}</span>
-                        {% if f.id != 'default' %}
-                        <button onclick="deleteFolder('{{ f.id }}', event)" class="text-xs opacity-60 hover:opacity-100"
-                            style="color: rgba(239,68,68,.95);">
-                            🗑
-                        </button>
-                        {% endif %}
-                    </div>
-                    {% endfor %}
+                  <div>
+                    <label class="text-xs uppercase text-text-muted font-black">Título (interno)</label>
+                    <input id="screenTitle"
+                      class="mt-1 w-full rounded-input bg-black/20 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 shadow-inset"
+                      placeholder="Ej: Promo Verano" />
+                    <div class="text-[11px] text-text-muted mt-1">Solo para el manager (la tarjeta)</div>
+                  </div>
                 </div>
 
-                <button onclick="createFolder()" class="pill r py-2 text-sm font-bold hover:brightness-110 transition">
-                    + Nueva carpeta
-                </button>
-            </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label class="text-xs uppercase text-text-muted font-black">Slug</label>
+                    <input id="screenSlug"
+                      class="mt-1 w-full rounded-input bg-black/20 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 shadow-inset"
+                      placeholder="promo-verano" />
+                  </div>
 
-            <!-- Assets panel -->
-            <div id="assetsTab" class="hidden flex-1 flex flex-col gap-3">
-                <div class="text-xs uppercase tracking-widest opacity-70">Assets reutilizables</div>
-
-                <div class="panel r p-3">
-                    <div class="text-xs opacity-70 mb-2">Subir imagen (PNG/JPG/WEBP)</div>
-                    <input id="assetFile" type="file" accept="image/*" class="w-full text-xs" />
-                    <button onclick="uploadAsset()" class="mt-3 w-full r py-2 text-sm font-extrabold transition"
-                        style="background: var(--primary);">
-                        Subir
+                  <div class="flex items-end gap-2">
+                    <button type="button" onclick="openPublic()"
+                      class="flex-1 rounded-btn px-3 py-2 text-sm font-black bg-white/6 hover:bg-white/10 transition">
+                      <i class="bi bi-box-arrow-up-right mr-2"></i>Abrir
                     </button>
+                    <button type="button" onclick="copyPublic()"
+                      class="rounded-btn px-3 py-2 text-sm font-black bg-white/6 hover:bg-white/10 transition">
+                      <i class="bi bi-clipboard mr-1"></i>URL
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- BRAND -->
+              <div class="rounded-card bg-white/5 shadow-soft2 p-4 mt-4 space-y-4">
+                <div class="flex items-center justify-between gap-3">
+                  <div class="font-black">🏷️ Encabezado (Brand)</div>
+                  <span class="text-xs text-text-muted">logo + título + subtítulo</span>
                 </div>
 
-                <div class="flex items-center justify-between">
-                    <div class="text-xs uppercase tracking-widest opacity-70 mt-2">Galería</div>
-                    <button onclick="refreshAssets()" class="text-xs pill r px-3 py-1 hover:brightness-110 transition">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label class="text-xs uppercase text-text-muted font-black">Título visible</label>
+                    <input id="brandTitle"
+                      class="mt-1 w-full rounded-input bg-black/20 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 shadow-inset"
+                      placeholder="Ej: Salchimonster" oninput="livePreview()" />
+                  </div>
+                  <div>
+                    <label class="text-xs uppercase text-text-muted font-black">Subtítulo visible</label>
+                    <input id="brandSubtitle"
+                      class="mt-1 w-full rounded-input bg-black/20 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 shadow-inset"
+                      placeholder="Ej: Enlaces rápidos" oninput="livePreview()" />
+                  </div>
+                </div>
+
+                <div class="rounded-card2 bg-black/20 p-3 space-y-3 shadow-inset">
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 items-start">
+                    <div>
+                      <div class="text-[11px] text-text-muted font-black mb-1">Tipo</div>
+                      <select id="brandLogoType"
+                        class="w-full rounded-input bg-black/20 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 shadow-inset"
+                        onchange="toggleBrandLogoPickers(); livePreview()">
+                        <option value="emoji">Emoji</option>
+                        <option value="asset">PNG (Asset)</option>
+                        <option value="image_url">PNG (URL)</option>
+                      </select>
+                    </div>
+
+                    <div id="brandLogoEmojiWrap">
+                      <div class="text-[11px] text-text-muted font-black mb-1">Emoji</div>
+                      <input id="brandLogoEmoji"
+                        class="w-full rounded-input bg-black/20 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 shadow-inset"
+                        placeholder="✨"
+                        oninput="(document.getElementById('brandLogoValue').value=this.value||'✨'); syncBrandLogoPreview(); livePreview()">
+                    </div>
+
+                    <div id="brandLogoAssetWrap" class="hidden">
+                      <div class="text-[11px] text-text-muted font-black mb-1">PNG (Asset)</div>
+                      <button type="button"
+                        class="w-full rounded-btn px-3 py-2 text-sm font-black bg-white/6 hover:bg-white/10 transition"
+                        onclick="openAssetPicker('brand_logo')">
+                        <i class="bi bi-image mr-2"></i>Elegir PNG
+                      </button>
+                    </div>
+
+                    <div id="brandLogoUrlWrap" class="hidden">
+                      <div class="text-[11px] text-text-muted font-black mb-1">PNG (URL)</div>
+                      <input id="brandLogoUrl"
+                        class="w-full rounded-input bg-black/20 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 shadow-inset"
+                        placeholder="https://..." oninput="applyBrandLogoUrl()">
+                    </div>
+                  </div>
+
+                  <div class="flex items-center gap-3">
+                    <div class="text-[11px] text-text-muted w-24">Seleccionado:</div>
+                    <div class="text-[11px] opacity-90 truncate" id="brandLogoSelected">-</div>
+                  </div>
+
+                  <div class="rounded-card2 overflow-hidden bg-black/20 shadow-inset">
+                    <img id="brandLogoThumb" class="w-full h-20 object-contain p-2 hidden" alt="">
+                    <div id="brandLogoEmpty" class="p-3 text-[11px] text-text-muted">No hay logo seleccionado.</div>
+                  </div>
+
+                  <input type="hidden" id="brandLogoValue">
+                </div>
+              </div>
+
+              <!-- APARIENCIA -->
+              <div class="rounded-card bg-white/5 shadow-soft2 p-4 mt-4 space-y-4">
+                <div class="flex items-center justify-between gap-3">
+                  <div class="font-black">🎨 Apariencia</div>
+                  <span class="text-xs text-text-muted">fondo + overlay + blur</span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label class="text-xs uppercase text-text-muted font-black">Tipo de fondo</label>
+                    <select id="bgType"
+                      class="mt-1 w-full rounded-input bg-black/20 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 shadow-inset"
+                      onchange="toggleBgPickers(); livePreview();">
+                      <option value="color">Color sólido</option>
+                      <option value="gradient">Degradado (sin escribir)</option>
+                      <option value="image_url">Imagen (URL)</option>
+                      <option value="image_asset">Imagen (Asset)</option>
+                    </select>
+                  </div>
+
+                  <div id="bgValueWrap">
+                    <label class="text-xs uppercase text-text-muted font-black">Valor fondo (auto)</label>
+                    <input id="bgValue" readonly
+                      class="mt-1 w-full rounded-input bg-black/15 px-3 py-2 text-sm text-text-muted outline-none shadow-inset"
+                      placeholder="Se genera automáticamente">
+                  </div>
+                </div>
+
+                <!-- COLOR PICKER -->
+                <div id="bgColorPicker" class="hidden rounded-card2 bg-black/20 p-3 shadow-inset">
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="text-xs uppercase text-text-muted font-black">Color sólido</div>
+                    <div class="text-[11px] text-text-muted">elige un color</div>
+                  </div>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
+                    <input id="bgSolidColor" type="color" class="w-full h-10 rounded-input bg-transparent"
+                      oninput="applyBgSolidColor()">
+                    <input id="bgSolidHex"
+                      class="w-full rounded-input bg-black/20 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 shadow-inset"
+                      placeholder="#0f172a" oninput="applyBgSolidHex()">
+                  </div>
+                </div>
+
+                <!-- GRADIENT BUILDER -->
+                <div id="bgGradientBuilder" class="hidden rounded-card2 bg-black/20 p-3 space-y-3 shadow-inset">
+                  <div class="flex items-center justify-between gap-2">
+                    <div class="text-xs uppercase text-text-muted font-black">Degradado</div>
+                    <div class="flex gap-2">
+                      <button type="button" onclick="addGradientStop()"
+                        class="text-xs px-3 py-1.5 rounded-btn bg-white/6 hover:bg-white/10 transition font-black">
+                        + Color
+                      </button>
+                      <button type="button" onclick="resetGradient()"
+                        class="text-xs px-3 py-1.5 rounded-btn bg-white/6 hover:bg-white/10 transition font-black">
+                        Reset
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label class="text-xs uppercase text-text-muted font-black">Tipo</label>
+                      <select id="gradMode"
+                        class="mt-1 w-full rounded-input bg-black/20 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 shadow-inset"
+                        onchange="renderGradientControls(); applyGradient();">
+                        <option value="linear">Linear</option>
+                        <option value="radial">Radial</option>
+                      </select>
+                    </div>
+
+                    <div id="gradAngleWrap">
+                      <label class="text-xs uppercase text-text-muted font-black">Ángulo</label>
+                      <input id="gradAngle" type="range" min="0" max="360" step="1"
+                        class="w-full mt-3" oninput="applyGradient()">
+                      <div class="text-[11px] text-text-muted -mt-1">0° a 360°</div>
+                    </div>
+                  </div>
+
+                  <div id="gradStops" class="space-y-2"></div>
+
+                  <div class="rounded-card2 overflow-hidden bg-black/20 shadow-inset">
+                    <div class="text-[11px] px-3 py-2 text-text-muted flex items-center justify-between bg-black/20">
+                      <span>Preview degradado</span>
+                      <span id="gradSummary" class="opacity-80"></span>
+                    </div>
+                    <div id="gradPreview" class="h-14"></div>
+                  </div>
+                </div>
+
+                <!-- IMAGE URL -->
+                <div id="bgUrlPicker" class="hidden rounded-card2 bg-black/20 p-3 shadow-inset">
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="text-xs uppercase text-text-muted font-black">Imagen por URL</div>
+                    <div class="text-[11px] text-text-muted">pega una URL</div>
+                  </div>
+                  <input id="bgImageUrl"
+                    class="w-full rounded-input bg-black/20 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 shadow-inset"
+                    placeholder="https://..." oninput="applyBgImageUrl()">
+                  <div class="text-[11px] text-text-muted mt-2">Se aplicará como fondo automáticamente.</div>
+                </div>
+
+                <!-- ASSET picker for background -->
+                <div id="bgAssetPicker" class="hidden rounded-card2 bg-black/20 p-3 shadow-inset">
+                  <div class="flex items-center justify-between gap-2 mb-2">
+                    <div class="text-xs uppercase text-text-muted font-black">Imagen de fondo (Asset)</div>
+                    <div class="flex gap-2">
+                      <button type="button" onclick="openAssetPicker('bg')"
+                        class="text-xs px-3 py-1.5 rounded-btn bg-white/6 hover:bg-white/10 transition font-black">
+                        Elegir
+                      </button>
+                      <button type="button" onclick="refreshAssets()"
+                        class="text-xs px-3 py-1.5 rounded-btn bg-white/6 hover:bg-white/10 transition font-black">
                         Refrescar
-                    </button>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="grid grid-cols-2 gap-3 items-center">
+                    <div class="text-[11px] text-text-muted">Seleccionado:</div>
+                    <div class="text-[11px] opacity-90 truncate" id="bgAssetSelected">Ninguno</div>
+                  </div>
+
+                  <div class="rounded-card2 overflow-hidden bg-black/20 mt-2 shadow-inset">
+                    <img id="bgAssetThumb" class="w-full h-24 object-contain p-2 hidden" alt="">
+                    <div id="bgAssetEmpty" class="p-3 text-[11px] text-text-muted">No hay fondo seleccionado.</div>
+                  </div>
                 </div>
 
-                <div id="assetsGrid" class="grid grid-cols-3 gap-2 overflow-y-auto pr-1"></div>
-            </div>
-
-            <div class="text-xs opacity-50">
-                Tip: usa los assets como fondo e íconos sin volver a subir.
-            </div>
-        </aside>
-
-        <!-- Main -->
-        <main class="flex-1 flex flex-col h-full">
-            <header class="h-16 flex items-center justify-between px-6" style="background: rgba(255,255,255,.02);">
-                <div>
-                    <div class="text-xs opacity-70">Carpeta actual</div>
-                    <div id="currentFolderName" class="text-lg font-extrabold">General</div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label class="text-xs uppercase text-text-muted font-black">Overlay opacidad</label>
+                    <input id="overlayOpacity" type="range" min="0" max="1" step="0.01"
+                      class="w-full mt-2" oninput="livePreview()">
+                  </div>
+                  <div>
+                    <label class="text-xs uppercase text-text-muted font-black">Overlay color</label>
+                    <input id="overlayColor" type="color"
+                      class="w-full h-10 mt-1 rounded-input bg-transparent"
+                      oninput="livePreview()">
+                  </div>
                 </div>
 
-                <button onclick="createNewScreen()" class="r px-4 py-2 text-sm font-extrabold transition"
-                    style="background: var(--primary); color:#fff;">
-                    + Crear Pantalla
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label class="text-xs uppercase text-text-muted font-black">Blur (px)</label>
+                    <input id="bgBlur" type="range" min="0" max="24" step="1"
+                      class="w-full mt-2" oninput="livePreview()">
+                  </div>
+                  <div>
+                    <label class="text-xs uppercase text-text-muted font-black">Zoom</label>
+                    <input id="bgZoom" type="range" min="1" max="1.25" step="0.01"
+                      class="w-full mt-2" oninput="livePreview()">
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label class="text-xs uppercase text-text-muted font-black">Color tarjetas</label>
+                    <input id="cardColor"
+                      class="mt-1 w-full rounded-input bg-black/20 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 shadow-inset"
+                      placeholder="rgba(255,255,255,0.10)" oninput="livePreview()">
+                  </div>
+                  <div>
+                    <label class="text-xs uppercase text-text-muted font-black">Texto</label>
+                    <input id="textColor" type="color"
+                      class="w-full h-10 mt-1 rounded-input bg-transparent"
+                      oninput="livePreview()">
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label class="text-xs uppercase text-text-muted font-black">Botón BG (default)</label>
+                    <input id="btnBg"
+                      class="mt-1 w-full rounded-input bg-black/20 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 shadow-inset"
+                      placeholder="rgba(255,255,255,0.12)" oninput="livePreview()">
+                  </div>
+                  <div>
+                    <label class="text-xs uppercase text-text-muted font-black">Botón texto (default)</label>
+                    <input id="btnText" type="color"
+                      class="w-full h-10 mt-1 rounded-input bg-transparent"
+                      oninput="livePreview()">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Links -->
+              <div class="rounded-card bg-white/5 shadow-soft2 p-4 mt-4">
+                <div class="flex items-center justify-between mb-3">
+                  <div class="font-black">🔗 Botones</div>
+                  <button type="button" onclick="addLinkRow()"
+                    class="text-xs px-3 py-1.5 rounded-btn bg-white/6 hover:bg-white/10 transition font-black">
+                    + Agregar
+                  </button>
+                </div>
+                <div id="linksContainer" class="space-y-3"></div>
+              </div>
+
+              <div class="flex gap-3 mt-4">
+                <button type="button" onclick="saveScreen()"
+                  class="flex-1 rounded-btn py-3 font-black bg-primary hover:bg-primary-hover transition shadow-soft2">
+                  Guardar
                 </button>
-            </header>
+                <button type="button" onclick="deleteScreen()"
+                  class="rounded-btn px-4 bg-danger-soft text-danger hover:bg-red-500/20 transition"
+                  title="Eliminar">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
 
-            <div class="flex-1 p-6 overflow-y-auto">
-                <div id="screensGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
             </div>
+          </div>
 
-            <!-- Modal -->
-            <div id="editModal" class="hidden fixed inset-0 z-50" style="background: rgba(0,0,0,.70);">
-                <div class="absolute inset-0 flex">
-
-                    <!-- Left editor -->
-                    <div class="w-full max-w-xl h-full p-6 overflow-y-auto"
-                        style="background: #0c1426; box-shadow: var(--shadow);">
-                        <div class="flex items-center justify-between mb-5">
-                            <div>
-                                <div class="text-xs opacity-70">Editor</div>
-                                <div class="text-xl font-black">Pantalla</div>
-                            </div>
-                            <button onclick="closeModal()" class="text-2xl opacity-70 hover:opacity-100">✕</button>
-                        </div>
-
-                        <input type="hidden" id="screenId">
-
-                        <!-- ✅ BASICS -->
-                        <div class="panel r p-4 space-y-4">
-                            <div class="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label class="text-xs uppercase opacity-70 font-bold">Carpeta</label>
-                                    <select id="screenFolderId" class="input w-full p-2 r mt-1 text-sm">
-                                        {% for f in folders %}
-                                        <option value="{{ f.id }}">{{ f.name }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="text-xs uppercase opacity-70 font-bold">Título (interno)</label>
-                                    <input id="screenTitle" class="input w-full p-2 r mt-1 text-sm"
-                                        placeholder="Ej: Promo Verano">
-                                    <div class="mini opacity-60 mt-1">Solo para el manager (la tarjeta)</div>
-                                </div>
-                            </div>
-
-                            <div class="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label class="text-xs uppercase opacity-70 font-bold">Slug</label>
-                                    <input id="screenSlug" class="input w-full p-2 r mt-1 text-sm"
-                                        placeholder="promo-verano">
-                                </div>
-                                <div class="flex items-end gap-2">
-                                    <button onclick="openPublic()"
-                                        class="flex-1 pill r py-2 text-sm font-bold hover:brightness-110 transition">
-                                        Abrir
-                                    </button>
-                                    <button onclick="copyPublic()"
-                                        class="pill r px-4 py-2 text-sm font-bold hover:brightness-110 transition">
-                                        Copiar URL
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- ✅ BRAND -->
-                        <div class="panel r p-4 mt-4 space-y-4">
-                            <div class="flex items-center justify-between">
-                                <div class="font-extrabold">🏷️ Encabezado (Brand)</div>
-                                <span class="text-xs opacity-60">logo + título + subtítulo</span>
-                            </div>
-
-                            <div class="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label class="text-xs uppercase opacity-70 font-bold">Título visible</label>
-                                    <input id="brandTitle" class="input w-full p-2 r mt-1 text-sm"
-                                        placeholder="Ej: Salchimonster" oninput="livePreview()">
-                                </div>
-                                <div>
-                                    <label class="text-xs uppercase opacity-70 font-bold">Subtítulo visible</label>
-                                    <input id="brandSubtitle" class="input w-full p-2 r mt-1 text-sm"
-                                        placeholder="Ej: Enlaces rápidos" oninput="livePreview()">
-                                </div>
-                            </div>
-
-                            <div class="panel-soft r p-3 space-y-3">
-                                <div class="flex items-center justify-between">
-                                    <div>
-                                        <div class="text-xs uppercase opacity-70 font-bold">Logo</div>
-                                        <div class="mini opacity-60">PNG (asset o URL) o Emoji</div>
-                                    </div>
-                                </div>
-
-                                <div class="grid grid-cols-3 gap-2 items-center">
-                                    <div>
-                                        <div class="mini opacity-70 font-bold mb-1">Tipo</div>
-                                        <select id="brandLogoType" class="input p-2 r text-sm w-full"
-                                            onchange="toggleBrandLogoPickers(); livePreview()">
-                                            <option value="emoji">Emoji</option>
-                                            <option value="asset">PNG (Asset)</option>
-                                            <option value="image_url">PNG (URL)</option>
-                                        </select>
-                                    </div>
-
-                                    <div id="brandLogoEmojiWrap">
-                                        <div class="mini opacity-70 font-bold mb-1">Emoji</div>
-                                        <input id="brandLogoEmoji" class="input p-2 r text-sm w-full" placeholder="✨"
-                                            oninput="(document.getElementById('brandLogoValue').value=this.value||'✨'); syncBrandLogoPreview(); livePreview()">
-                                    </div>
-
-                                    <div id="brandLogoAssetWrap" class="hidden">
-                                        <div class="mini opacity-70 font-bold mb-1">PNG (Asset)</div>
-                                        <button type="button"
-                                            class="w-full pill r py-2 text-sm font-bold hover:brightness-110 transition"
-                                            onclick="openAssetPicker('brand_logo')">
-                                            Elegir PNG
-                                        </button>
-                                    </div>
-
-                                    <div id="brandLogoUrlWrap" class="hidden">
-                                        <div class="mini opacity-70 font-bold mb-1">PNG (URL)</div>
-                                        <input id="brandLogoUrl" class="input p-2 r text-sm w-full"
-                                            placeholder="https://..." oninput="applyBrandLogoUrl()">
-                                    </div>
-                                </div>
-
-                                <div class="mt-2 flex items-center gap-3">
-                                    <div class="mini opacity-60 w-24">Seleccionado:</div>
-                                    <div class="mini opacity-80 truncate" id="brandLogoSelected">-</div>
-                                </div>
-
-                                <div class="r overflow-hidden" style="background: rgba(255,255,255,.04);">
-                                    <img id="brandLogoThumb" class="w-full h-20 object-contain hidden" alt="">
-                                    <div id="brandLogoEmpty" class="p-3 mini opacity-60">No hay logo seleccionado.</div>
-                                </div>
-
-                                <input type="hidden" id="brandLogoValue">
-                            </div>
-                        </div>
-
-                        <!-- Appearance -->
-                        <div class="panel r p-4 mt-4 space-y-4">
-                            <div class="flex items-center justify-between">
-                                <div class="font-extrabold">🎨 Apariencia</div>
-                                <span class="text-xs opacity-60">fondo + overlay + blur</span>
-                            </div>
-
-                            <div class="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label class="text-xs uppercase opacity-70 font-bold">Tipo de fondo</label>
-                                    <select id="bgType" class="input w-full p-2 r mt-1 text-sm"
-                                        onchange="toggleBgPickers(); livePreview();">
-                                        <option value="color">Color sólido</option>
-                                        <option value="gradient">Degradado (sin escribir)</option>
-                                        <option value="image_url">Imagen (URL)</option>
-                                        <option value="image_asset">Imagen (Asset)</option>
-                                    </select>
-                                </div>
-
-                                <div id="bgValueWrap">
-                                    <label class="text-xs uppercase opacity-70 font-bold">Valor fondo (auto)</label>
-                                    <input id="bgValue" class="input w-full p-2 r mt-1 text-sm"
-                                        placeholder="Se genera automáticamente" readonly>
-                                </div>
-                            </div>
-
-                            <!-- COLOR PICKER -->
-                            <div id="bgColorPicker" class="hidden panel-soft r p-3">
-                                <div class="flex items-center justify-between mb-2">
-                                    <div class="text-xs uppercase opacity-70 font-bold">Color sólido</div>
-                                    <div class="mini opacity-60">elige un color</div>
-                                </div>
-                                <div class="grid grid-cols-2 gap-3 items-center">
-                                    <input id="bgSolidColor" type="color" class="w-full h-10 r bg-transparent"
-                                        oninput="applyBgSolidColor()">
-                                    <input id="bgSolidHex" class="input w-full p-2 r text-sm" placeholder="#0f172a"
-                                        oninput="applyBgSolidHex()">
-                                </div>
-                            </div>
-
-                            <!-- GRADIENT BUILDER -->
-                            <div id="bgGradientBuilder" class="hidden panel-soft r p-3 space-y-3">
-                                <div class="flex items-center justify-between">
-                                    <div class="text-xs uppercase opacity-70 font-bold">Degradado</div>
-                                    <div class="flex gap-2">
-                                        <button onclick="addGradientStop()"
-                                            class="text-xs pill r px-3 py-1 hover:brightness-110 transition"
-                                            type="button">+ Color</button>
-                                        <button onclick="resetGradient()"
-                                            class="text-xs pill r px-3 py-1 hover:brightness-110 transition"
-                                            type="button">Reset</button>
-                                    </div>
-                                </div>
-
-                                <div class="grid grid-cols-2 gap-3">
-                                    <div>
-                                        <label class="text-xs uppercase opacity-70 font-bold">Tipo</label>
-                                        <select id="gradMode" class="input w-full p-2 r mt-1 text-sm"
-                                            onchange="renderGradientControls(); applyGradient();">
-                                            <option value="linear">Linear</option>
-                                            <option value="radial">Radial</option>
-                                        </select>
-                                    </div>
-                                    <div id="gradAngleWrap">
-                                        <label class="text-xs uppercase opacity-70 font-bold">Ángulo</label>
-                                        <input id="gradAngle" type="range" min="0" max="360" step="1"
-                                            class="w-full mt-3" oninput="applyGradient()">
-                                        <div class="mini opacity-60 -mt-1">0° a 360°</div>
-                                    </div>
-                                </div>
-
-                                <div id="gradStops" class="space-y-2"></div>
-
-                                <div class="r overflow-hidden" style="background: rgba(255,255,255,.04);">
-                                    <div class="mini px-3 py-2 opacity-70 flex items-center justify-between"
-                                        style="background: rgba(0,0,0,.18);">
-                                        <span>x.com_cookies.txt degradado</span>
-                                        <span id="gradSummary" class="opacity-60"></span>
-                                    </div>
-                                    <div id="gradx.com_cookies.txt" class="h-14"></div>
-                                </div>
-                            </div>
-
-                            <!-- IMAGE URL -->
-                            <div id="bgUrlPicker" class="hidden panel-soft r p-3">
-                                <div class="flex items-center justify-between mb-2">
-                                    <div class="text-xs uppercase opacity-70 font-bold">Imagen por URL</div>
-                                    <div class="mini opacity-60">pega una URL</div>
-                                </div>
-                                <input id="bgImageUrl" class="input w-full p-2 r text-sm" placeholder="https://..."
-                                    oninput="applyBgImageUrl()">
-                                <div class="mini opacity-60 mt-2">Se aplicará como background-image automáticamente.
-                                </div>
-                            </div>
-
-                            <!-- ASSET picker for background -->
-                            <div id="bgAssetPicker" class="hidden panel-soft r p-3">
-                                <div class="flex items-center justify-between mb-2">
-                                    <div class="text-xs uppercase opacity-70 font-bold">Imagen de fondo (Asset)</div>
-                                    <div class="flex gap-2">
-                                        <button onclick="openAssetPicker('bg')"
-                                            class="text-xs pill r px-3 py-1 hover:brightness-110 transition"
-                                            type="button">Elegir</button>
-                                        <button onclick="refreshAssets()"
-                                            class="text-xs pill r px-3 py-1 hover:brightness-110 transition"
-                                            type="button">Refrescar</button>
-                                    </div>
-                                </div>
-
-                                <div class="grid grid-cols-2 gap-3 items-center">
-                                    <div class="mini opacity-60">Seleccionado:</div>
-                                    <div class="mini opacity-80 truncate" id="bgAssetSelected">Ninguno</div>
-                                </div>
-
-                                <div class="r overflow-hidden mt-2" style="background: rgba(255,255,255,.04);">
-                                    <img id="bgAssetThumb" class="w-full h-24 object-cover hidden" alt="">
-                                    <div id="bgAssetEmpty" class="p-3 mini opacity-60">No hay fondo seleccionado.</div>
-                                </div>
-                            </div>
-
-                            <div class="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label class="text-xs uppercase opacity-70 font-bold">Overlay opacidad</label>
-                                    <input id="overlayOpacity" type="range" min="0" max="1" step="0.01"
-                                        class="w-full mt-2" oninput="livePreview()">
-                                </div>
-                                <div>
-                                    <label class="text-xs uppercase opacity-70 font-bold">Overlay color</label>
-                                    <input id="overlayColor" type="color" class="w-full h-10 mt-1 r bg-transparent"
-                                        oninput="livePreview()">
-                                </div>
-                            </div>
-
-                            <div class="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label class="text-xs uppercase opacity-70 font-bold">Blur (px)</label>
-                                    <input id="bgBlur" type="range" min="0" max="24" step="1" class="w-full mt-2"
-                                        oninput="livePreview()">
-                                </div>
-                                <div>
-                                    <label class="text-xs uppercase opacity-70 font-bold">Zoom</label>
-                                    <input id="bgZoom" type="range" min="1" max="1.25" step="0.01" class="w-full mt-2"
-                                        oninput="livePreview()">
-                                </div>
-                            </div>
-
-                            <div class="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label class="text-xs uppercase opacity-70 font-bold">Color tarjetas</label>
-                                    <input id="cardColor" class="input w-full p-2 r mt-1 text-sm"
-                                        placeholder="rgba(255,255,255,0.10)" oninput="livePreview()">
-                                </div>
-                                <div>
-                                    <label class="text-xs uppercase opacity-70 font-bold">Texto</label>
-                                    <input id="textColor" type="color" class="w-full h-10 mt-1 r bg-transparent"
-                                        oninput="livePreview()">
-                                </div>
-                            </div>
-
-                            <div class="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label class="text-xs uppercase opacity-70 font-bold">Botón BG (default)</label>
-                                    <input id="btnBg" class="input w-full p-2 r mt-1 text-sm"
-                                        placeholder="rgba(255,255,255,0.12)" oninput="livePreview()">
-                                </div>
-                                <div>
-                                    <label class="text-xs uppercase opacity-70 font-bold">Botón texto (default)</label>
-                                    <input id="btnText" type="color" class="w-full h-10 mt-1 r bg-transparent"
-                                        oninput="livePreview()">
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Links -->
-                        <div class="panel r p-4 mt-4">
-                            <div class="flex items-center justify-between mb-3">
-                                <div class="font-extrabold">🔗 Botones</div>
-                                <button onclick="addLinkRow()"
-                                    class="pill r px-3 py-1 text-xs font-bold hover:brightness-110 transition"
-                                    type="button">
-                                    + Agregar
-                                </button>
-                            </div>
-                            <div id="linksContainer" class="space-y-3"></div>
-                        </div>
-
-                        <div class="flex gap-3 mt-4">
-                            <button onclick="saveScreen()" class="flex-1 r py-3 font-black transition"
-                                style="background: var(--primary); color:#fff;">
-                                Guardar
-                            </button>
-                            <button onclick="deleteScreen()" class="r px-4 transition"
-                                style="background: rgba(239,68,68,.16); color: rgba(239,68,68,.95);">
-                                🗑
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Right Preview -->
-                    <div class="flex-1 h-full p-6">
-                        <div class="flex items-center justify-between mb-4">
-                            <div>
-                                <div class="text-xs opacity-70">Preview en vivo</div>
-                                <div class="text-lg font-extrabold">Mockup</div>
-                            </div>
-                            <button onclick="livePreview()"
-                                class="pill r px-4 py-2 text-sm font-bold hover:brightness-110 transition"
-                                type="button">
-                                Actualizar
-                            </button>
-                        </div>
-
-                        <div class="mx-auto w-[360px] max-w-full">
-                            <div class="panel r-2 p-3">
-                                <div class="r-2 overflow-hidden" style="background:#000;">
-                                    <iframe id="previewFrame" class="w-full h-[680px] bg-black"></iframe>
-                                </div>
-                            </div>
-                           
-                        </div>
-
-                    </div>
+          <!-- Right Preview -->
+          <div class="flex-1 min-h-0 overflow-y-auto">
+            <div class="p-4 sm:p-6">
+              <div class="flex items-center justify-between mb-4">
+                <div>
+                  <div class="text-xs text-text-muted">Preview en vivo</div>
+                  <div class="text-lg font-extrabold">Mockup</div>
                 </div>
-            </div>
+                <button type="button" onclick="livePreview()"
+                  class="rounded-btn px-4 py-2 text-sm font-black bg-white/6 hover:bg-white/10 transition">
+                  <i class="bi bi-arrow-repeat mr-2"></i>Actualizar
+                </button>
+              </div>
 
-            <!-- Asset Picker Modal -->
-            <div id="assetPickerModal" class="hidden fixed inset-0 z-[60]" style="background: rgba(0,0,0,.70);">
-                <div class="absolute inset-0 flex items-center justify-center p-4">
-                    <div class="w-full max-w-3xl panel r p-4">
-                        <div class="flex items-center justify-between mb-3">
-                            <div>
-                                <div class="text-xs opacity-70">Selecciona un Asset</div>
-                                <div id="assetPickerTitle" class="text-lg font-black">Galería</div>
-                            </div>
-                            <button onclick="closeAssetPicker()"
-                                class="text-2xl opacity-70 hover:opacity-100">✕</button>
-                        </div>
-
-                        <div class="flex gap-2 items-center mb-3">
-                            <input id="assetSearch" class="input flex-1 p-2 r text-sm"
-                                placeholder="Buscar por nombre..." oninput="renderAssetPickerGrid()">
-                            <button onclick="refreshAssets().then(()=>renderAssetPickerGrid())"
-                                class="pill r px-3 py-2 text-sm font-bold hover:brightness-110 transition"
-                                type="button">
-                                Refrescar
-                            </button>
-                        </div>
-
-                        <div id="assetPickerGrid"
-                            class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-[60vh] overflow-y-auto pr-1">
-                        </div>
-
-                        <div class="mini opacity-60 mt-3">
-                            Tip: esto sirve tanto para fondo como para íconos PNG de botones.
-                        </div>
-                    </div>
+              <div class="mx-auto w-full max-w-[420px]">
+                <div class="rounded-card bg-white/5 shadow-soft2 p-3">
+                  <div class="rounded-card2 overflow-hidden bg-black/50">
+                    <iframe id="previewFrame" class="w-full h-[520px] sm:h-[620px] bg-black"></iframe>
+                  </div>
                 </div>
+              </div>
+
+              <div class="text-xs text-text-muted mt-4">
+                Tip: todo se previsualiza sin escribir CSS; el degradado se arma con controles.
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Asset Picker Modal -->
+      <div id="assetPickerModal" class="hidden fixed inset-0 z-[80] bg-black/70 backdrop-blur-[2px]">
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+          <div class="w-full max-w-3xl rounded-card bg-white/6 backdrop-blur-xl shadow-soft p-4">
+            <div class="flex items-start justify-between mb-3 gap-3">
+              <div>
+                <div class="text-xs text-text-muted">Selecciona un Asset</div>
+                <div id="assetPickerTitle" class="text-lg font-black">Galería</div>
+              </div>
+              <button type="button" onclick="closeAssetPicker()" class="text-2xl opacity-70 hover:opacity-100 transition">✕</button>
             </div>
 
-        </main>
-    </div>
+            <div class="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center mb-3">
+              <input id="assetSearch"
+                class="flex-1 rounded-input bg-black/20 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 shadow-inset"
+                placeholder="Buscar por nombre..." oninput="renderAssetPickerGrid()">
+              <button type="button" onclick="refreshAssets().then(()=>renderAssetPickerGrid())"
+                class="rounded-btn px-3 py-2 text-sm font-black bg-white/6 hover:bg-white/10 transition">
+                <i class="bi bi-arrow-clockwise mr-2"></i>Refrescar
+              </button>
+            </div>
 
-    <script>
-        let allScreens = {{ screens| tojson }};
-        let allAssets = {{ assets| tojson }};
-        let currentFilterFolder = 'default';
+            <div id="assetPickerGrid"
+              class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-[60vh] overflow-y-auto pr-1">
+            </div>
 
-        // Contexto del selector de assets: bg, icon, brand_logo
-        let assetPickerContext = { type: null, linkRowEl: null };
+            <div class="text-[11px] text-text-muted mt-3">
+              Tip: esto sirve tanto para fondo como para íconos PNG de botones.
+            </div>
+          </div>
+        </div>
+      </div>
 
-        // Estado del degradado
-        let gradState = {
-            mode: 'linear',
-            angle: 135,
-            stops: [
-                { color: '#0ea5e9', pos: 0 },
-                { color: '#8b5cf6', pos: 100 }
-            ]
-        };
+    </main>
+  </div>
 
-        // ------------- Tabs -------------
-        function switchTab(tab) {
-            const screensTab = document.getElementById('screensTab');
-            const assetsTab = document.getElementById('assetsTab');
-            const tS = document.getElementById('tabScreens');
-            const tA = document.getElementById('tabAssets');
+  <script>
+    let allScreens = {{ screens|tojson }};
+    let allAssets  = {{ assets|tojson }};
+    let currentFilterFolder = 'default';
 
-            if (tab === 'assets') {
-                screensTab.classList.add('hidden');
-                assetsTab.classList.remove('hidden');
-                tA.classList.add('active-folder');
-                tS.classList.remove('active-folder');
-                renderAssetsSidebar();
-            } else {
-                assetsTab.classList.add('hidden');
-                screensTab.classList.remove('hidden');
-                tS.classList.add('active-folder');
-                tA.classList.remove('active-folder');
-            }
-        }
-        switchTab('screens');
+    let assetPickerContext = { type: null, linkRowEl: null };
 
-        // ------------- Folders -------------
-        async function createFolder() {
-            const name = prompt("Nombre de la nueva carpeta:");
-            if (!name) return;
-            const res = await fetch('/api/folders/create', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name })
-            });
-            if (res.ok) location.reload();
-        }
+    let gradState = {
+      mode: 'linear',
+      angle: 135,
+      stops: [
+        { color: '#0ea5e9', pos: 0 },
+        { color: '#8b5cf6', pos: 100 }
+      ]
+    };
 
-        async function deleteFolder(id, e) {
-            e.stopPropagation();
-            if (!confirm("¿Borrar carpeta? Las pantallas pasarán a 'General'")) return;
-            const res = await fetch('/api/folders/delete', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id })
-            });
-            if (res.ok) location.reload();
-        }
+    // ---------- Sidebar mobile ----------
+    function openSidebar(){
+      document.getElementById('sidebar').classList.remove('-translate-x-full');
+      document.getElementById('sidebarOverlay').classList.remove('hidden');
+    }
+    function closeSidebar(){
+      document.getElementById('sidebar').classList.add('-translate-x-full');
+      document.getElementById('sidebarOverlay').classList.add('hidden');
+    }
+    document.addEventListener('keydown', (e)=>{
+      if(e.key === 'Escape'){
+        closeSidebar();
+        closeModal();
+        closeAssetPicker();
+      }
+    });
 
-        function selectFolder(id, el) {
-            currentFilterFolder = id;
-            document.querySelectorAll('.folder-item').forEach(d => d.classList.remove('active-folder'));
-            if (el) el.classList.add('active-folder');
+    // ---------- Tabs ----------
+    function setTabActive(btn, active){
+      // ✅ sin bordes, más “pill”
+      if(active){
+        btn.classList.add('bg-primary/15','text-primary');
+        btn.classList.remove('bg-white/5');
+      }else{
+        btn.classList.remove('bg-primary/15','text-primary');
+        btn.classList.add('bg-white/5');
+      }
+    }
 
-            document.getElementById('currentFolderName').innerText = el ? el.innerText.replace('📁', '').trim() : "Todas";
-            renderScreens();
-        }
+    function switchTab(tab){
+      const screensTab = document.getElementById('screensTab');
+      const assetsTab  = document.getElementById('assetsTab');
+      const tS = document.getElementById('tabScreens');
+      const tA = document.getElementById('tabAssets');
 
-        // ------------- Screens grid -------------
-        function renderScreens() {
-            const container = document.getElementById('screensGrid');
-            container.innerHTML = '';
+      if(tab === 'assets'){
+        screensTab.classList.add('hidden');
+        assetsTab.classList.remove('hidden');
+        setTabActive(tA,true); setTabActive(tS,false);
+        renderAssetsSidebar();
+      }else{
+        assetsTab.classList.add('hidden');
+        screensTab.classList.remove('hidden');
+        setTabActive(tS,true); setTabActive(tA,false);
+      }
+    }
+    switchTab('screens');
 
-            const filtered = allScreens.filter(s => (s.folder_id || 'default') === currentFilterFolder);
+    // ---------- Folders ----------
+    async function createFolder(){
+      const name = prompt("Nombre de la nueva carpeta:");
+      if(!name) return;
+      const res = await fetch('/api/folders/create',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({name})
+      });
+      if(res.ok) location.reload();
+      else alert("Error creando carpeta");
+    }
 
-            if (filtered.length === 0) {
-                container.innerHTML = `<div class="col-span-3 text-center text-slate-400 mt-10">No hay pantallas en esta carpeta</div>`;
-                return;
-            }
+    async function deleteFolder(id, e){
+      e.stopPropagation();
+      if(!confirm("¿Borrar carpeta? Las pantallas pasarán a 'General'")) return;
+      const res = await fetch('/api/folders/delete',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({id})
+      });
+      if(res.ok) location.reload();
+      else alert("Error eliminando carpeta");
+    }
 
-            filtered.forEach(s => {
-                const card = document.createElement('div');
-                card.className = "panel r p-4 hover:brightness-110 transition cursor-pointer";
-                card.onclick = () => openModal(s);
+    function setFolderActive(el){
+      document.querySelectorAll('.folder-item').forEach(d=>{
+        d.classList.remove('bg-primary/10','ring-2','ring-primary/20');
+      });
+      if(el){
+        el.classList.add('bg-primary/10','ring-2','ring-primary/20');
+      }
+    }
 
-                const linkCount = (s.links || []).length;
-                card.innerHTML = `
+    function selectFolder(id, el){
+      currentFilterFolder = id;
+      setFolderActive(el);
+
+      const name = el ? el.innerText.replace('📁','').trim() : "Todas";
+      document.getElementById('currentFolderName').innerText = name;
+
+      renderScreens();
+
+      if(window.innerWidth < 1024) closeSidebar();
+    }
+
+    // ---------- Screens grid ----------
+    function renderScreens(){
+      const container = document.getElementById('screensGrid');
+      container.innerHTML = '';
+
+      const filtered = allScreens.filter(s => (s.folder_id || 'default') === currentFilterFolder);
+
+      if(filtered.length === 0){
+        container.innerHTML = `
+          <div class="col-span-full text-center text-text-muted mt-10">
+            No hay pantallas en esta carpeta
+          </div>`;
+        return;
+      }
+
+      filtered.forEach(s=>{
+        const card = document.createElement('div');
+        card.className = "rounded-card bg-white/5 shadow-soft2 p-4 hover:bg-white/10 hover:shadow-hover transition cursor-pointer";
+        card.onclick = () => openModal(s);
+
+        const linkCount = (s.links || []).length;
+        card.innerHTML = `
           <div class="flex items-start justify-between gap-3">
-            <div>
-              <div class="text-xs opacity-70 mb-1">Pantalla</div>
+            <div class="min-w-0">
+              <div class="text-xs text-text-muted mb-1">Pantalla</div>
               <div class="text-lg font-black truncate">${escapeHtml(s.title || 'Sin título')}</div>
-              <div class="text-xs opacity-60 mt-1">${linkCount} botones</div>
+              <div class="text-xs text-text-muted mt-1">${linkCount} botones</div>
             </div>
+
             <a href="/s/${encodeURIComponent(s.slug)}" target="_blank"
                onclick="event.stopPropagation()"
-               class="pill r text-xs px-3 py-1 hover:brightness-110 transition">
+               class="shrink-0 text-xs px-3 py-1.5 rounded-btn bg-black/20 hover:bg-white/10 transition">
               /${escapeHtml(s.slug)}
             </a>
           </div>
-          <div class="mt-4 text-xs opacity-60">Click para editar • preview dentro del modal</div>
+          <div class="mt-4 text-xs text-text-muted">Click para editar • preview dentro del modal</div>
         `;
-                container.appendChild(card);
-            });
+        container.appendChild(card);
+      });
+    }
+
+    // ---------- Modal ----------
+    function createNewScreen(){ openModal(null); }
+    function closeModal(){ document.getElementById('editModal').classList.add('hidden'); }
+
+    function openPublic(){
+      const slug = document.getElementById('screenSlug').value.trim();
+      if(!slug) return alert("Pon un slug primero");
+      window.open(`/s/${slug}`,'_blank');
+    }
+    async function copyPublic(){
+      const slug = document.getElementById('screenSlug').value.trim();
+      if(!slug) return alert("Pon un slug primero");
+      const url = `${location.origin}/s/${slug}`;
+      await navigator.clipboard.writeText(url);
+      alert("URL copiada ✅");
+    }
+
+    // ---------- Brand toggles ----------
+    function toggleBrandLogoPickers(){
+      const t = document.getElementById('brandLogoType').value;
+      const emojiWrap = document.getElementById('brandLogoEmojiWrap');
+      const assetWrap = document.getElementById('brandLogoAssetWrap');
+      const urlWrap   = document.getElementById('brandLogoUrlWrap');
+
+      emojiWrap.classList.add('hidden');
+      assetWrap.classList.add('hidden');
+      urlWrap.classList.add('hidden');
+
+      if(t === 'emoji'){
+        emojiWrap.classList.remove('hidden');
+        document.getElementById('brandLogoValue').value = document.getElementById('brandLogoEmoji').value || '✨';
+        syncBrandLogoPreview();
+      }else if(t === 'asset'){
+        assetWrap.classList.remove('hidden');
+        syncBrandLogoPreview();
+      }else{
+        urlWrap.classList.remove('hidden');
+        applyBrandLogoUrl();
+      }
+    }
+
+    function applyBrandLogoUrl(){
+      const u = document.getElementById('brandLogoUrl').value.trim();
+      document.getElementById('brandLogoValue').value = u;
+      syncBrandLogoPreview();
+      livePreview();
+    }
+
+    function syncBrandLogoPreview(){
+      const type = document.getElementById('brandLogoType').value;
+      const v = (document.getElementById('brandLogoValue').value || '').trim();
+
+      const thumb = document.getElementById('brandLogoThumb');
+      const empty = document.getElementById('brandLogoEmpty');
+      const txt   = document.getElementById('brandLogoSelected');
+
+      if(type === 'emoji'){
+        txt.innerText = v ? `Emoji: ${v}` : 'Emoji';
+        thumb.classList.add('hidden');
+        empty.classList.remove('hidden');
+        empty.innerText = `Emoji seleccionado: ${v || '✨'}`;
+      }else{
+        if(v){
+          thumb.src = v;
+          thumb.classList.remove('hidden');
+          empty.classList.add('hidden');
+          txt.innerText = assetNameFromUrl(v) || v;
+        }else{
+          thumb.classList.add('hidden');
+          empty.classList.remove('hidden');
+          txt.innerText = '-';
+          empty.innerText = `No hay logo seleccionado.`;
+        }
+      }
+    }
+
+    // ---------- Background helpers ----------
+    function isHexColor(v){
+      return /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(String(v || '').trim());
+    }
+    function extractUrlFromCssUrl(v){
+      const s = String(v || '').trim();
+      const m = s.match(/^url\((.*)\)$/i);
+      if(!m) return '';
+      let inner = m[1].trim();
+      if((inner.startsWith('"') && inner.endsWith('"')) || (inner.startsWith("'") && inner.endsWith("'"))){
+        inner = inner.slice(1,-1);
+      }
+      return inner;
+    }
+
+    function toggleBgPickers(){
+      const t = document.getElementById('bgType').value;
+
+      const colorPicker = document.getElementById('bgColorPicker');
+      const gradBuilder = document.getElementById('bgGradientBuilder');
+      const urlPicker   = document.getElementById('bgUrlPicker');
+      const assetPicker = document.getElementById('bgAssetPicker');
+
+      colorPicker.classList.add('hidden');
+      gradBuilder.classList.add('hidden');
+      urlPicker.classList.add('hidden');
+      assetPicker.classList.add('hidden');
+
+      if(t === 'color'){
+        colorPicker.classList.remove('hidden');
+        const v = document.getElementById('bgValue').value || '#0f172a';
+        if(isHexColor(v)){
+          document.getElementById('bgSolidColor').value = v;
+          document.getElementById('bgSolidHex').value = v;
+        }
+        applyBgSolidColor();
+      }else if(t === 'gradient'){
+        gradBuilder.classList.remove('hidden');
+        renderGradientControls();
+        applyGradient();
+      }else if(t === 'image_url'){
+        urlPicker.classList.remove('hidden');
+        const cur = document.getElementById('bgValue').value || '';
+        const u = extractUrlFromCssUrl(cur);
+        if(u) document.getElementById('bgImageUrl').value = u;
+        applyBgImageUrl();
+      }else if(t === 'image_asset'){
+        assetPicker.classList.remove('hidden');
+        syncBgAssetPreview();
+      }
+    }
+
+    function openModal(data=null){
+      document.getElementById('editModal').classList.remove('hidden');
+
+      if(!data){
+        document.getElementById('screenId').value = '';
+        document.getElementById('screenTitle').value = '';
+        document.getElementById('screenSlug').value = '';
+        document.getElementById('screenFolderId').value = currentFilterFolder || 'default';
+
+        document.getElementById('brandTitle').value = 'Enlaces';
+        document.getElementById('brandSubtitle').value = 'Enlaces rápidos • estilo corporativo';
+        document.getElementById('brandLogoType').value = 'emoji';
+        document.getElementById('brandLogoEmoji').value = '✨';
+        document.getElementById('brandLogoUrl').value = '';
+        document.getElementById('brandLogoValue').value = '✨';
+
+        document.getElementById('bgType').value = 'color';
+        document.getElementById('bgValue').value = '#0f172a';
+
+        document.getElementById('bgSolidColor').value = '#0f172a';
+        document.getElementById('bgSolidHex').value = '#0f172a';
+
+        gradState = {
+          mode: 'linear',
+          angle: 135,
+          stops: [{ color:'#0ea5e9', pos:0 }, { color:'#8b5cf6', pos:100 }]
+        };
+        document.getElementById('gradMode').value = 'linear';
+        document.getElementById('gradAngle').value = 135;
+
+        document.getElementById('bgImageUrl').value = '';
+
+        document.getElementById('overlayOpacity').value = 0.35;
+        document.getElementById('overlayColor').value = '#000000';
+        document.getElementById('bgBlur').value = 0;
+        document.getElementById('bgZoom').value = 1.00;
+
+        document.getElementById('cardColor').value = 'rgba(255,255,255,0.10)';
+        document.getElementById('textColor').value = '#ffffff';
+        document.getElementById('btnBg').value = 'rgba(255,255,255,0.12)';
+        document.getElementById('btnText').value = '#ffffff';
+
+        document.getElementById('linksContainer').innerHTML = '';
+        addLinkRow();
+      }else{
+        document.getElementById('screenId').value = data.id || '';
+        document.getElementById('screenTitle').value = data.title || '';
+        document.getElementById('screenSlug').value = data.slug || '';
+        document.getElementById('screenFolderId').value = data.folder_id || 'default';
+
+        const th = data.theme || {};
+        const brand = th.brand || data.brand || {};
+
+        document.getElementById('brandTitle').value = brand.title || (data.title || 'Enlaces');
+        document.getElementById('brandSubtitle').value = brand.subtitle || 'Enlaces rápidos • estilo corporativo';
+
+        document.getElementById('brandLogoType').value = brand.logo_type || 'emoji';
+        if((brand.logo_type || 'emoji') === 'emoji'){
+          document.getElementById('brandLogoEmoji').value = brand.logo_value || '✨';
+          document.getElementById('brandLogoValue').value = document.getElementById('brandLogoEmoji').value || '✨';
+        }else{
+          document.getElementById('brandLogoEmoji').value = '✨';
+          document.getElementById('brandLogoValue').value = brand.logo_value || '';
+        }
+        document.getElementById('brandLogoUrl').value = (brand.logo_type === 'image_url') ? (brand.logo_value || '') : '';
+
+        document.getElementById('bgType').value = th.bg_type || 'color';
+        document.getElementById('bgValue').value = th.bg_value || '#0f172a';
+
+        if((th.bg_type || 'color') === 'color'){
+          const v = th.bg_value || '#0f172a';
+          if(isHexColor(v)){
+            document.getElementById('bgSolidColor').value = v;
+            document.getElementById('bgSolidHex').value = v;
+          }else{
+            document.getElementById('bgSolidColor').value = '#0f172a';
+            document.getElementById('bgSolidHex').value = '#0f172a';
+          }
         }
 
-        // ------------- Modal -------------
-        function createNewScreen() { openModal(null); }
-        function closeModal() { document.getElementById('editModal').classList.add('hidden'); }
-
-        function openPublic() {
-            const slug = document.getElementById('screenSlug').value.trim();
-            if (!slug) return alert("Pon un slug primero");
-            window.open(`/s/${slug}`, '_blank');
-        }
-        async function copyPublic() {
-            const slug = document.getElementById('screenSlug').value.trim();
-            if (!slug) return alert("Pon un slug primero");
-            const url = `${location.origin}/s/${slug}`;
-            await navigator.clipboard.writeText(url);
-            alert("URL copiada ✅");
+        if((th.bg_type || '') === 'gradient'){
+          tryInferGradientFromString(th.bg_value || '');
         }
 
-        // ✅ Brand toggles
-        function toggleBrandLogoPickers() {
-            const t = document.getElementById('brandLogoType').value;
-
-            const emojiWrap = document.getElementById('brandLogoEmojiWrap');
-            const assetWrap = document.getElementById('brandLogoAssetWrap');
-            const urlWrap = document.getElementById('brandLogoUrlWrap');
-
-            emojiWrap.classList.add('hidden');
-            assetWrap.classList.add('hidden');
-            urlWrap.classList.add('hidden');
-
-            if (t === 'emoji') {
-                emojiWrap.classList.remove('hidden');
-                document.getElementById('brandLogoValue').value = document.getElementById('brandLogoEmoji').value || '✨';
-                syncBrandLogoPreview();
-            } else if (t === 'asset') {
-                assetWrap.classList.remove('hidden');
-                syncBrandLogoPreview();
-            } else if (t === 'image_url') {
-                urlWrap.classList.remove('hidden');
-                applyBrandLogoUrl();
-            }
+        if((th.bg_type || '') === 'image_url'){
+          const u = extractUrlFromCssUrl(th.bg_value || '');
+          if(u) document.getElementById('bgImageUrl').value = u;
         }
 
-        function applyBrandLogoUrl() {
-            const u = document.getElementById('brandLogoUrl').value.trim();
-            document.getElementById('brandLogoValue').value = u;
-            syncBrandLogoPreview();
-            livePreview();
-        }
+        document.getElementById('overlayOpacity').value = th.bg_overlay_opacity ?? 0.35;
+        document.getElementById('overlayColor').value = th.bg_overlay_color || '#000000';
+        document.getElementById('bgBlur').value = th.bg_blur_px ?? 0;
+        document.getElementById('bgZoom').value = th.bg_zoom ?? 1.00;
 
-        function syncBrandLogoPreview() {
-            const type = document.getElementById('brandLogoType').value;
-            const v = (document.getElementById('brandLogoValue').value || '').trim();
+        document.getElementById('cardColor').value = th.card_color || 'rgba(255,255,255,0.10)';
+        document.getElementById('textColor').value = th.text_color || '#ffffff';
+        document.getElementById('btnBg').value = th.btn_bg || 'rgba(255,255,255,0.12)';
+        document.getElementById('btnText').value = th.btn_text || '#ffffff';
 
-            const thumb = document.getElementById('brandLogoThumb');
-            const empty = document.getElementById('brandLogoEmpty');
-            const txt = document.getElementById('brandLogoSelected');
+        document.getElementById('linksContainer').innerHTML = '';
+        const links = data.links || [];
+        if(links.length) links.forEach(l => addLinkRow(l));
+        else addLinkRow();
+      }
 
-            if (type === 'emoji') {
-                txt.innerText = v ? `Emoji: ${v}` : 'Emoji';
-                thumb.classList.add('hidden');
-                empty.classList.remove('hidden');
-                empty.innerText = `Emoji seleccionado: ${v || '✨'}`;
-            } else {
-                if (v) {
-                    thumb.src = v;
-                    thumb.classList.remove('hidden');
-                    empty.classList.add('hidden');
-                    txt.innerText = assetNameFromUrl(v) || v;
-                } else {
-                    thumb.classList.add('hidden');
-                    empty.classList.remove('hidden');
-                    txt.innerText = '-';
-                }
-            }
-        }
+      toggleBrandLogoPickers();
+      toggleBgPickers();
+      syncBrandLogoPreview();
+      livePreview();
+    }
 
-        // ------------- Background helpers -------------
-        function isHexColor(v) {
-            return /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(String(v || '').trim());
-        }
-        function extractUrlFromCssUrl(v) {
-            const s = String(v || '').trim();
-            const m = s.match(/^url\((.*)\)$/i);
-            if (!m) return '';
-            let inner = m[1].trim();
-            if ((inner.startsWith('"') && inner.endsWith('"')) || (inner.startsWith("'") && inner.endsWith("'"))) {
-                inner = inner.slice(1, -1);
-            }
-            return inner;
-        }
+    // ---------- Background setters ----------
+    function applyBgSolidColor(){
+      const c = document.getElementById('bgSolidColor').value;
+      document.getElementById('bgSolidHex').value = c;
+      document.getElementById('bgValue').value = c;
+      livePreview();
+    }
+    function applyBgSolidHex(){
+      const v = document.getElementById('bgSolidHex').value.trim();
+      if(isHexColor(v)){
+        document.getElementById('bgSolidColor').value = v;
+        document.getElementById('bgValue').value = v;
+        livePreview();
+      }
+    }
+    function applyBgImageUrl(){
+      const u = document.getElementById('bgImageUrl').value.trim();
+      document.getElementById('bgValue').value = u ? `url("${u}")` : '';
+      livePreview();
+    }
 
-        function toggleBgPickers() {
-            const t = document.getElementById('bgType').value;
+    // ---------- Gradient ----------
+    function renderGradientControls(){
+      gradState.mode = document.getElementById('gradMode').value;
+      const wrap = document.getElementById('gradAngleWrap');
+      if(gradState.mode === 'linear') wrap.classList.remove('hidden');
+      else wrap.classList.add('hidden');
 
-            const colorPicker = document.getElementById('bgColorPicker');
-            const gradBuilder = document.getElementById('bgGradientBuilder');
-            const urlPicker = document.getElementById('bgUrlPicker');
-            const assetPicker = document.getElementById('bgAssetPicker');
+      const stopsWrap = document.getElementById('gradStops');
+      stopsWrap.innerHTML = '';
 
-            colorPicker.classList.add('hidden');
-            gradBuilder.classList.add('hidden');
-            urlPicker.classList.add('hidden');
-            assetPicker.classList.add('hidden');
+      gradState.stops.forEach((st, idx)=>{
+        const row = document.createElement('div');
+        row.className = "rounded-card2 bg-black/20 p-2 shadow-inset";
 
-            if (t === 'color') {
-                colorPicker.classList.remove('hidden');
-                const v = document.getElementById('bgValue').value || '#0f172a';
-                if (isHexColor(v)) {
-                    document.getElementById('bgSolidColor').value = v;
-                    document.getElementById('bgSolidHex').value = v;
-                }
-                applyBgSolidColor();
-            } else if (t === 'gradient') {
-                gradBuilder.classList.remove('hidden');
-                renderGradientControls();
-                applyGradient(); // ✅ solo aquí
-            } else if (t === 'image_url') {
-                urlPicker.classList.remove('hidden');
-                const cur = document.getElementById('bgValue').value || '';
-                const u = extractUrlFromCssUrl(cur);
-                if (u) document.getElementById('bgImageUrl').value = u;
-                applyBgImageUrl();
-            } else if (t === 'image_asset') {
-                assetPicker.classList.remove('hidden');
-                syncBgAssetPreview();
-            }
-        }
-
-        function openModal(data = null) {
-            document.getElementById('editModal').classList.remove('hidden');
-
-            if (!data) {
-                document.getElementById('screenId').value = '';
-                document.getElementById('screenTitle').value = '';
-                document.getElementById('screenSlug').value = '';
-                document.getElementById('screenFolderId').value = currentFilterFolder || 'default';
-
-                // ✅ brand defaults
-                document.getElementById('brandTitle').value = 'Enlaces';
-                document.getElementById('brandSubtitle').value = 'Enlaces rápidos • estilo corporativo';
-                document.getElementById('brandLogoType').value = 'emoji';
-                document.getElementById('brandLogoEmoji').value = '✨';
-                document.getElementById('brandLogoUrl').value = '';
-                document.getElementById('brandLogoValue').value = '✨';
-
-                document.getElementById('bgType').value = 'color';
-                document.getElementById('bgValue').value = '#0f172a';
-
-                document.getElementById('bgSolidColor').value = '#0f172a';
-                document.getElementById('bgSolidHex').value = '#0f172a';
-
-                gradState = {
-                    mode: 'linear',
-                    angle: 135,
-                    stops: [
-                        { color: '#0ea5e9', pos: 0 },
-                        { color: '#8b5cf6', pos: 100 }
-                    ]
-                };
-                document.getElementById('gradMode').value = 'linear';
-                document.getElementById('gradAngle').value = 135;
-
-                document.getElementById('bgImageUrl').value = '';
-
-                document.getElementById('overlayOpacity').value = 0.35;
-                document.getElementById('overlayColor').value = '#000000';
-                document.getElementById('bgBlur').value = 0;
-                document.getElementById('bgZoom').value = 1.00;
-
-                document.getElementById('cardColor').value = 'rgba(255,255,255,0.10)';
-                document.getElementById('textColor').value = '#ffffff';
-                document.getElementById('btnBg').value = 'rgba(255,255,255,0.12)';
-                document.getElementById('btnText').value = '#ffffff';
-
-                document.getElementById('linksContainer').innerHTML = '';
-                addLinkRow();
-            } else {
-                document.getElementById('screenId').value = data.id || '';
-                document.getElementById('screenTitle').value = data.title || '';
-                document.getElementById('screenSlug').value = data.slug || '';
-                document.getElementById('screenFolderId').value = data.folder_id || 'default';
-
-                const th = data.theme || {};
-
-                // ✅ brand load
-                const brand = th.brand || data.brand || {};
-                document.getElementById('brandTitle').value = brand.title || (data.title || 'Enlaces');
-                document.getElementById('brandSubtitle').value = brand.subtitle || 'Enlaces rápidos • estilo corporativo';
-
-                document.getElementById('brandLogoType').value = brand.logo_type || 'emoji';
-                if ((brand.logo_type || 'emoji') === 'emoji') {
-                    document.getElementById('brandLogoEmoji').value = brand.logo_value || '✨';
-                    document.getElementById('brandLogoValue').value = document.getElementById('brandLogoEmoji').value || '✨';
-                } else {
-                    document.getElementById('brandLogoEmoji').value = '✨';
-                    document.getElementById('brandLogoValue').value = brand.logo_value || '';
-                }
-                document.getElementById('brandLogoUrl').value = (brand.logo_type === 'image_url') ? (brand.logo_value || '') : '';
-
-                document.getElementById('bgType').value = th.bg_type || 'color';
-                document.getElementById('bgValue').value = th.bg_value || '#0f172a';
-
-                if ((th.bg_type || 'color') === 'color') {
-                    const v = th.bg_value || '#0f172a';
-                    if (isHexColor(v)) {
-                        document.getElementById('bgSolidColor').value = v;
-                        document.getElementById('bgSolidHex').value = v;
-                    } else {
-                        document.getElementById('bgSolidColor').value = '#0f172a';
-                        document.getElementById('bgSolidHex').value = '#0f172a';
-                    }
-                }
-
-                if ((th.bg_type || '') === 'gradient') {
-                    tryInferGradientFromString(th.bg_value || '');
-                }
-
-                if ((th.bg_type || '') === 'image_url') {
-                    const u = extractUrlFromCssUrl(th.bg_value || '');
-                    if (u) document.getElementById('bgImageUrl').value = u;
-                }
-
-                document.getElementById('overlayOpacity').value = th.bg_overlay_opacity ?? 0.35;
-                document.getElementById('overlayColor').value = th.bg_overlay_color || '#000000';
-                document.getElementById('bgBlur').value = th.bg_blur_px ?? 0;
-                document.getElementById('bgZoom').value = th.bg_zoom ?? 1.00;
-
-                document.getElementById('cardColor').value = th.card_color || 'rgba(255,255,255,0.10)';
-                document.getElementById('textColor').value = th.text_color || '#ffffff';
-                document.getElementById('btnBg').value = th.btn_bg || 'rgba(255,255,255,0.12)';
-                document.getElementById('btnText').value = th.btn_text || '#ffffff';
-
-                document.getElementById('linksContainer').innerHTML = '';
-                const links = data.links || [];
-                if (links.length) links.forEach(l => addLinkRow(l));
-                else addLinkRow();
-            }
-
-            // ✅ NO llamar applyGradient() a la fuerza (era el bug)
-            toggleBrandLogoPickers();
-            toggleBgPickers();        // aquí se aplica lo que corresponda
-            syncBrandLogoPreview();
-            livePreview();
-        }
-
-        // ------------- Background setters -------------
-        function applyBgSolidColor() {
-            const c = document.getElementById('bgSolidColor').value;
-            document.getElementById('bgSolidHex').value = c;
-            document.getElementById('bgValue').value = c;
-            livePreview();
-        }
-        function applyBgSolidHex() {
-            const v = document.getElementById('bgSolidHex').value.trim();
-            if (isHexColor(v)) {
-                document.getElementById('bgSolidColor').value = v;
-                document.getElementById('bgValue').value = v;
-                livePreview();
-            }
-        }
-        function applyBgImageUrl() {
-            const u = document.getElementById('bgImageUrl').value.trim();
-            if (!u) {
-                document.getElementById('bgValue').value = '';
-            } else {
-                document.getElementById('bgValue').value = `url("${u}")`;
-            }
-            livePreview();
-        }
-
-        // ------------- Gradient -------------
-        function renderGradientControls() {
-            gradState.mode = document.getElementById('gradMode').value;
-            const wrap = document.getElementById('gradAngleWrap');
-            if (gradState.mode === 'linear') wrap.classList.remove('hidden');
-            else wrap.classList.add('hidden');
-
-            const stopsWrap = document.getElementById('gradStops');
-            stopsWrap.innerHTML = '';
-
-            gradState.stops.forEach((st, idx) => {
-                const row = document.createElement('div');
-                row.className = "panel-soft r p-2";
-
-                row.innerHTML = `
+        row.innerHTML = `
           <div class="flex items-center justify-between mb-2">
-            <div class="mini opacity-70 font-bold">Color ${idx + 1}</div>
-            <button type="button" class="mini opacity-60 hover:opacity-100 ${gradState.stops.length <= 2 ? 'hidden' : ''}"
+            <div class="text-[11px] text-text-muted font-black">Color ${idx+1}</div>
+            <button type="button"
+              class="text-[11px] opacity-70 hover:opacity-100 ${gradState.stops.length <= 2 ? 'hidden' : ''}"
               onclick="removeGradientStop(${idx})">Quitar</button>
           </div>
 
           <div class="grid grid-cols-3 gap-2 items-center">
-            <input type="color" class="w-full h-10 r bg-transparent" value="${escapeAttr(st.color)}"
+            <input type="color" class="w-full h-10 rounded-input bg-transparent" value="${escapeAttr(st.color)}"
               oninput="updateGradientStopColor(${idx}, this.value)">
             <input type="range" class="w-full" min="0" max="100" step="1" value="${Number(st.pos)}"
               oninput="updateGradientStopPos(${idx}, this.value)">
-            <input type="number" class="input p-2 r text-sm" min="0" max="100" step="1" value="${Number(st.pos)}"
+            <input type="number"
+              class="rounded-input bg-black/20 px-2 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 shadow-inset"
+              min="0" max="100" step="1" value="${Number(st.pos)}"
               oninput="updateGradientStopPos(${idx}, this.value)">
           </div>
-          <div class="mini opacity-60 mt-1">Posición: ${Number(st.pos)}%</div>
+
+          <div class="text-[11px] text-text-muted mt-1">Posición: ${Number(st.pos)}%</div>
         `;
-                stopsWrap.appendChild(row);
-            });
+        stopsWrap.appendChild(row);
+      });
 
-            document.getElementById('gradAngle').value = Number(gradState.angle || 135);
-        }
+      document.getElementById('gradAngle').value = Number(gradState.angle || 135);
+    }
 
-        function updateGradientStopColor(i, val) {
-            gradState.stops[i].color = val;
-            applyGradient();
-        }
-        function updateGradientStopPos(i, val) {
-            const n = Math.max(0, Math.min(100, Number(val)));
-            gradState.stops[i].pos = n;
-            renderGradientControls();
-            applyGradient();
-        }
+    function updateGradientStopColor(i, val){
+      gradState.stops[i].color = val;
+      applyGradient();
+    }
+    function updateGradientStopPos(i, val){
+      const n = Math.max(0, Math.min(100, Number(val)));
+      gradState.stops[i].pos = n;
+      renderGradientControls();
+      applyGradient();
+    }
 
-        function addGradientStop() {
-            if (gradState.stops.length >= 4) return alert("Máximo 4 colores por ahora ✅");
-            const lastPos = gradState.stops[gradState.stops.length - 1].pos;
-            const nextPos = Math.min(100, Number(lastPos) + 10);
-            gradState.stops.push({ color: '#22c55e', pos: nextPos });
-            renderGradientControls();
-            applyGradient();
-        }
-        function removeGradientStop(i) {
-            if (gradState.stops.length <= 2) return;
-            gradState.stops.splice(i, 1);
-            renderGradientControls();
-            applyGradient();
-        }
-        function resetGradient() {
-            gradState = {
-                mode: 'linear',
-                angle: 135,
-                stops: [
-                    { color: '#0ea5e9', pos: 0 },
-                    { color: '#8b5cf6', pos: 100 }
-                ]
-            };
-            document.getElementById('gradMode').value = 'linear';
-            document.getElementById('gradAngle').value = 135;
-            renderGradientControls();
-            applyGradient();
-        }
+    function addGradientStop(){
+      if(gradState.stops.length >= 4) return alert("Máximo 4 colores por ahora ✅");
+      const lastPos = gradState.stops[gradState.stops.length - 1].pos;
+      const nextPos = Math.min(100, Number(lastPos) + 10);
+      gradState.stops.push({ color:'#22c55e', pos: nextPos });
+      renderGradientControls();
+      applyGradient();
+    }
+    function removeGradientStop(i){
+      if(gradState.stops.length <= 2) return;
+      gradState.stops.splice(i,1);
+      renderGradientControls();
+      applyGradient();
+    }
+    function resetGradient(){
+      gradState = {
+        mode: 'linear',
+        angle: 135,
+        stops: [{ color:'#0ea5e9', pos:0 }, { color:'#8b5cf6', pos:100 }]
+      };
+      document.getElementById('gradMode').value = 'linear';
+      document.getElementById('gradAngle').value = 135;
+      renderGradientControls();
+      applyGradient();
+    }
 
-        function applyGradient() {
-            // ✅ GUARD: NO pisar bgValue si NO estamos en modo gradient
-            if (document.getElementById('bgType').value !== 'gradient') return;
+    function applyGradient(){
+      if(document.getElementById('bgType').value !== 'gradient') return;
 
-            gradState.mode = document.getElementById('gradMode').value;
-            gradState.angle = Number(document.getElementById('gradAngle').value || 135);
+      gradState.mode = document.getElementById('gradMode').value;
+      gradState.angle = Number(document.getElementById('gradAngle').value || 135);
 
-            const stops = [...gradState.stops].sort((a, b) => a.pos - b.pos);
+      const stops = [...gradState.stops].sort((a,b)=>a.pos-b.pos);
 
-            let css = '';
-            if (gradState.mode === 'radial') {
-                css = `radial-gradient(circle, ${stops.map(s => `${s.color} ${s.pos}%`).join(', ')})`;
-            } else {
-                css = `linear-gradient(${gradState.angle}deg, ${stops.map(s => `${s.color} ${s.pos}%`).join(', ')})`;
-            }
+      let css = '';
+      if(gradState.mode === 'radial'){
+        css = `radial-gradient(circle, ${stops.map(s=>`${s.color} ${s.pos}%`).join(', ')})`;
+      }else{
+        css = `linear-gradient(${gradState.angle}deg, ${stops.map(s=>`${s.color} ${s.pos}%`).join(', ')})`;
+      }
 
-            document.getElementById('bgValue').value = css;
+      document.getElementById('bgValue').value = css;
 
-            const prev = document.getElementById('gradPreview');
-            prev.style.backgroundImage = css;
-            document.getElementById('gradSummary').innerText =
-                gradState.mode === 'linear' ? `${gradState.angle}° • ${stops.length} colores` : `radial • ${stops.length} colores`;
+      const prev = document.getElementById('gradPreview');
+      if(prev) prev.style.backgroundImage = css;
 
-            livePreview();
-        }
+      document.getElementById('gradSummary').innerText =
+        gradState.mode === 'linear' ? `${gradState.angle}° • ${stops.length} colores` : `radial • ${stops.length} colores`;
 
-        function tryInferGradientFromString(v) {
-            const s = String(v || '').trim();
-            if (!s.startsWith('linear-gradient')) return;
-            const m = s.match(/^linear-gradient\((.*)\)$/i);
-            if (!m) return;
-            const inside = m[1];
-            const parts = inside.split(',').map(x => x.trim());
-            if (parts.length < 3) return;
+      livePreview();
+    }
 
-            let angle = 135;
-            if (parts[0].includes('deg')) {
-                angle = parseInt(parts[0], 10);
-                parts.shift();
-            }
+    function tryInferGradientFromString(v){
+      const s = String(v || '').trim();
+      if(!s.startsWith('linear-gradient')) return;
 
-            const c1 = (parts[0] || '#0ea5e9').split(' ')[0];
-            const c2 = (parts[1] || '#8b5cf6').split(' ')[0];
+      const m = s.match(/^linear-gradient\((.*)\)$/i);
+      if(!m) return;
+      const inside = m[1];
+      const parts = inside.split(',').map(x=>x.trim());
+      if(parts.length < 3) return;
 
-            gradState = {
-                mode: 'linear',
-                angle: isNaN(angle) ? 135 : angle,
-                stops: [
-                    { color: isHexColor(c1) ? c1 : '#0ea5e9', pos: 0 },
-                    { color: isHexColor(c2) ? c2 : '#8b5cf6', pos: 100 }
-                ]
-            };
+      let angle = 135;
+      if(parts[0].includes('deg')){
+        angle = parseInt(parts[0], 10);
+        parts.shift();
+      }
 
-            document.getElementById('gradMode').value = 'linear';
-            document.getElementById('gradAngle').value = gradState.angle;
-        }
+      const c1 = (parts[0] || '#0ea5e9').split(' ')[0];
+      const c2 = (parts[1] || '#8b5cf6').split(' ')[0];
 
-        // ------------- Link rows (icon PNG + estilo por link) -------------
-        function addLinkRow(data = {}) {
-            const container = document.getElementById('linksContainer');
+      gradState = {
+        mode: 'linear',
+        angle: isNaN(angle) ? 135 : angle,
+        stops: [
+          { color: isHexColor(c1) ? c1 : '#0ea5e9', pos: 0 },
+          { color: isHexColor(c2) ? c2 : '#8b5cf6', pos: 100 }
+        ]
+      };
 
-            const div = document.createElement('div');
-            div.className = "link-row panel-soft r p-3 space-y-2";
+      document.getElementById('gradMode').value = 'linear';
+      document.getElementById('gradAngle').value = gradState.angle;
+    }
 
-            const st = data.style || {};
-            const iconType = data.icon_type || 'emoji';
-            const iconValue = data.icon_value || '🔗';
+    // ---------- Link rows (icon PNG + estilo por link) ----------
+    function addLinkRow(data = {}){
+      const container = document.getElementById('linksContainer');
 
-            div.innerHTML = `
+      const div = document.createElement('div');
+      div.className = "link-row rounded-card2 bg-black/20 p-3 space-y-2 shadow-inset";
+
+      const st = data.style || {};
+      const iconType = data.icon_type || 'emoji';
+      const iconValue = data.icon_value || '🔗';
+
+      div.innerHTML = `
         <div class="flex items-center justify-between">
-          <div class="font-extrabold text-sm">Botón</div>
+          <div class="font-black text-sm">Botón</div>
           <button type="button"
-                  onclick="this.closest('.link-row').remove(); livePreview();"
-                  class="text-xs opacity-60 hover:opacity-100">Quitar</button>
+            onclick="this.closest('.link-row').remove(); livePreview();"
+            class="text-xs opacity-70 hover:opacity-100">Quitar</button>
         </div>
 
-        <div class="grid grid-cols-2 gap-2">
-          <input type="text" class="lbl input p-2 r text-sm" placeholder="Texto" value="${escapeAttr(data.label || '')}" oninput="livePreview()">
-          <input type="text" class="url input p-2 r text-sm" placeholder="URL" value="${escapeAttr(data.url || '')}" oninput="livePreview()">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <input type="text"
+            class="lbl rounded-input bg-black/20 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 shadow-inset"
+            placeholder="Texto" value="${escapeAttr(data.label || '')}" oninput="livePreview()">
+          <input type="text"
+            class="url rounded-input bg-black/20 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 shadow-inset"
+            placeholder="URL" value="${escapeAttr(data.url || '')}" oninput="livePreview()">
         </div>
 
-        <div class="panel-soft r p-2">
-          <div class="grid grid-cols-3 gap-2 items-center">
+        <div class="rounded-card2 bg-black/20 p-2 shadow-inset">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 items-start">
             <div>
-              <div class="mini opacity-70 font-bold mb-1">Ícono</div>
-              <select class="icoType input p-2 r text-sm w-full" onchange="toggleIconPicker(this); livePreview()">
+              <div class="text-[11px] text-text-muted font-black mb-1">Ícono</div>
+              <select class="icoType rounded-input bg-black/20 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 shadow-inset w-full"
+                onchange="toggleIconPicker(this); livePreview()">
                 <option value="emoji" ${iconType === 'emoji' ? 'selected' : ''}>Emoji</option>
                 <option value="asset" ${iconType === 'asset' ? 'selected' : ''}>PNG (Asset)</option>
               </select>
             </div>
 
             <div class="icoEmojiWrap">
-              <div class="mini opacity-70 font-bold mb-1">Emoji</div>
-              <input type="text" class="icoVal input p-2 r text-sm w-full" placeholder="🔗" value="${escapeAttr(iconType === 'emoji' ? iconValue : '')}" oninput="livePreview()">
+              <div class="text-[11px] text-text-muted font-black mb-1">Emoji</div>
+              <input type="text"
+                class="icoVal rounded-input bg-black/20 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 shadow-inset w-full"
+                placeholder="🔗"
+                value="${escapeAttr(iconType === 'emoji' ? iconValue : '')}" oninput="livePreview()">
             </div>
 
             <div class="icoAssetWrap hidden">
-              <div class="mini opacity-70 font-bold mb-1">PNG (Asset)</div>
+              <div class="text-[11px] text-text-muted font-black mb-1">PNG (Asset)</div>
               <button type="button"
-                      class="pickIcon w-full pill r py-2 text-sm font-bold hover:brightness-110 transition"
-                      onclick="openAssetPicker('icon', this.closest('.link-row'))">Elegir PNG</button>
+                class="pickIcon w-full rounded-btn px-3 py-2 text-sm font-black bg-white/6 hover:bg-white/10 transition"
+                onclick="openAssetPicker('icon', this.closest('.link-row'))">
+                <i class="bi bi-image mr-2"></i>Elegir PNG
+              </button>
             </div>
           </div>
 
           <div class="mt-2 flex items-center gap-3">
-            <div class="mini opacity-60 w-24">Seleccionado:</div>
-            <div class="mini opacity-80 truncate icoSelectedText">-</div>
+            <div class="text-[11px] text-text-muted w-24">Seleccionado:</div>
+            <div class="text-[11px] opacity-90 truncate icoSelectedText">-</div>
           </div>
 
-          <div class="r overflow-hidden mt-2" style="background: rgba(255,255,255,.04);">
-            <img class="icoThumb w-full h-16 object-cover hidden" alt="">
-            <div class="icoEmpty p-3 mini opacity-60">No hay PNG seleccionado.</div>
+          <div class="rounded-card2 overflow-hidden bg-black/20 mt-2 shadow-inset">
+            <img class="icoThumb w-full h-16 object-contain p-2 hidden" alt="">
+            <div class="icoEmpty p-3 text-[11px] text-text-muted">No hay PNG seleccionado.</div>
           </div>
 
           <input type="hidden" class="icoValHidden" value="${escapeAttr(iconType === 'asset' ? iconValue : '')}">
         </div>
 
-        <div class="grid grid-cols-4 gap-2">
-          <input type="text" class="stBg input p-2 r text-xs" placeholder="BG (opcional)" value="${escapeAttr(st.bg || '')}" oninput="livePreview()">
-          <input type="text" class="stBorder input p-2 r text-xs" placeholder="Borde (opcional)" value="${escapeAttr(st.border || '')}" oninput="livePreview()">
-          <input type="text" class="stText input p-2 r text-xs" placeholder="Texto (opcional)" value="${escapeAttr(st.text || '')}" oninput="livePreview()">
-          <input type="number" class="stRadius input p-2 r text-xs" placeholder="Radio" value="${st.radius ?? ''}" oninput="livePreview()">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <input type="text" class="stBg rounded-input bg-black/20 px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-primary/30 shadow-inset"
+            placeholder="BG (opcional)" value="${escapeAttr(st.bg || '')}" oninput="livePreview()">
+          <input type="text" class="stBorder rounded-input bg-black/20 px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-primary/30 shadow-inset"
+            placeholder="Borde (opcional)" value="${escapeAttr(st.border || '')}" oninput="livePreview()">
+          <input type="text" class="stText rounded-input bg-black/20 px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-primary/30 shadow-inset"
+            placeholder="Texto (opcional)" value="${escapeAttr(st.text || '')}" oninput="livePreview()">
+          <input type="number" class="stRadius rounded-input bg-black/20 px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-primary/30 shadow-inset"
+            placeholder="Radio" value="${st.radius ?? ''}" oninput="livePreview()">
         </div>
       `;
 
-            container.appendChild(div);
-            toggleIconPicker(div.querySelector('.icoType'));
+      container.appendChild(div);
+      toggleIconPicker(div.querySelector('.icoType'));
 
-            if (iconType === 'asset' && iconValue) {
-                setLinkIconAsset(div, iconValue);
-            } else {
-                div.querySelector('.icoSelectedText').innerText = iconType === 'emoji' ? 'Emoji' : '-';
-            }
-        }
+      if(iconType === 'asset' && iconValue){
+        setLinkIconAsset(div, iconValue);
+      }else{
+        div.querySelector('.icoSelectedText').innerText = iconType === 'emoji' ? 'Emoji' : '-';
+      }
+    }
 
-        function toggleIconPicker(selectEl) {
-            const wrap = selectEl.closest('.link-row');
-            const emojiWrap = wrap.querySelector('.icoEmojiWrap');
-            const assetWrap = wrap.querySelector('.icoAssetWrap');
+    function toggleIconPicker(selectEl){
+      const wrap = selectEl.closest('.link-row');
+      const emojiWrap = wrap.querySelector('.icoEmojiWrap');
+      const assetWrap = wrap.querySelector('.icoAssetWrap');
 
-            if (selectEl.value === 'asset') {
-                emojiWrap.classList.add('hidden');
-                assetWrap.classList.remove('hidden');
-            } else {
-                emojiWrap.classList.remove('hidden');
-                assetWrap.classList.add('hidden');
+      if(selectEl.value === 'asset'){
+        emojiWrap.classList.add('hidden');
+        assetWrap.classList.remove('hidden');
+      }else{
+        emojiWrap.classList.remove('hidden');
+        assetWrap.classList.add('hidden');
 
-                wrap.querySelector('.icoValHidden').value = '';
-                wrap.querySelector('.icoThumb').classList.add('hidden');
-                wrap.querySelector('.icoEmpty').classList.remove('hidden');
-                wrap.querySelector('.icoSelectedText').innerText = 'Emoji';
-            }
-        }
+        wrap.querySelector('.icoValHidden').value = '';
+        wrap.querySelector('.icoThumb').classList.add('hidden');
+        wrap.querySelector('.icoEmpty').classList.remove('hidden');
+        wrap.querySelector('.icoSelectedText').innerText = 'Emoji';
+      }
+    }
 
-        function setLinkIconAsset(rowEl, assetUrl) {
-            rowEl.querySelector('.icoValHidden').value = assetUrl;
+    function setLinkIconAsset(rowEl, assetUrl){
+      rowEl.querySelector('.icoValHidden').value = assetUrl;
 
-            const img = rowEl.querySelector('.icoThumb');
-            const empty = rowEl.querySelector('.icoEmpty');
-            const txt = rowEl.querySelector('.icoSelectedText');
+      const img = rowEl.querySelector('.icoThumb');
+      const empty = rowEl.querySelector('.icoEmpty');
+      const txt = rowEl.querySelector('.icoSelectedText');
 
-            img.src = assetUrl;
-            img.classList.remove('hidden');
-            empty.classList.add('hidden');
+      img.src = assetUrl;
+      img.classList.remove('hidden');
+      empty.classList.add('hidden');
 
-            const name = assetNameFromUrl(assetUrl);
-            txt.innerText = name ? name : assetUrl;
+      const name = assetNameFromUrl(assetUrl);
+      txt.innerText = name ? name : assetUrl;
 
-            livePreview();
-        }
+      livePreview();
+    }
 
-        function assetNameFromUrl(url) {
-            try {
-                const u = String(url || '');
-                const parts = u.split('/');
-                return parts[parts.length - 1] || '';
-            } catch (e) { return ''; }
-        }
+    function assetNameFromUrl(url){
+      try{
+        const u = String(url || '');
+        const parts = u.split('/');
+        return parts[parts.length - 1] || '';
+      }catch(e){ return ''; }
+    }
 
-        // ------------- Assets sidebar -------------
-        async function refreshAssets() {
-            const res = await fetch('/api/assets/list');
-            const js = await res.json();
-            allAssets = js.assets || [];
-            renderAssetsSidebar();
-            syncBgAssetPreview();
-        }
+    // ---------- Assets sidebar ----------
+    async function refreshAssets(){
+      const res = await fetch('/api/assets/list');
+      const js = await res.json();
+      allAssets = js.assets || [];
+      renderAssetsSidebar();
+      syncBgAssetPreview();
+    }
 
-        function renderAssetsSidebar() {
-            const grid = document.getElementById('assetsGrid');
-            if (!grid) return;
-            grid.innerHTML = '';
+    function renderAssetsSidebar(){
+      const grid = document.getElementById('assetsGrid');
+      if(!grid) return;
+      grid.innerHTML = '';
 
-            allAssets.forEach(a => {
-                const item = document.createElement('div');
-                item.className = "panel r overflow-hidden";
-                item.innerHTML = `
-          <img src="${a.url}" class="w-full h-20 object-cover">
-          <div class="p-2 text-[10px] opacity-70 truncate">${escapeHtml(a.name || a.id)}</div>
+      allAssets.forEach(a=>{
+        const item = document.createElement('div');
+        item.className = "rounded-card2 bg-black/20 overflow-hidden shadow-inset hover:bg-white/10 transition";
+        item.innerHTML = `
+          <div class="h-20 bg-black/20 flex items-center justify-center">
+            <img src="${a.url}" class="w-full h-full object-contain p-2" alt="">
+          </div>
+          <div class="p-2 text-[10px] text-text-muted truncate">${escapeHtml(a.name || a.id)}</div>
         `;
-                grid.appendChild(item);
-            });
+        grid.appendChild(item);
+      });
 
-            if (allAssets.length === 0) {
-                grid.innerHTML = `<div class="col-span-3 text-xs opacity-60">Aún no tienes assets. Sube una imagen.</div>`;
-            }
-        }
+      if(allAssets.length === 0){
+        grid.innerHTML = `<div class="col-span-full text-xs text-text-muted">Aún no tienes assets. Sube una imagen.</div>`;
+      }
+    }
 
-        async function uploadAsset() {
-            const inp = document.getElementById('assetFile');
-            if (!inp.files || !inp.files[0]) return alert("Selecciona una imagen");
+    async function uploadAsset(){
+      const inp = document.getElementById('assetFile');
+      if(!inp.files || !inp.files[0]) return alert("Selecciona una imagen");
 
-            const fd = new FormData();
-            fd.append('file', inp.files[0]);
+      const fd = new FormData();
+      fd.append('file', inp.files[0]);
 
-            const res = await fetch('/api/assets/upload', { method: 'POST', body: fd });
-            if (!res.ok) {
-                const err = await res.json().catch(() => ({ detail: 'Error' }));
-                return alert(err.detail || 'Error subiendo');
-            }
-            inp.value = '';
-            await refreshAssets();
-            alert("Asset subido ✅");
-        }
+      const res = await fetch('/api/assets/upload', { method:'POST', body: fd });
+      if(!res.ok){
+        const err = await res.json().catch(()=>({detail:'Error'}));
+        return alert(err.detail || 'Error subiendo');
+      }
+      inp.value = '';
+      await refreshAssets();
+      alert("Asset subido ✅");
+    }
 
-        // ------------- Asset Picker Modal -------------
-        function openAssetPicker(type, linkRowEl = null) {
-            assetPickerContext.type = type;
-            assetPickerContext.linkRowEl = linkRowEl;
+    // ---------- Asset Picker Modal ----------
+    function openAssetPicker(type, linkRowEl=null){
+      assetPickerContext.type = type;
+      assetPickerContext.linkRowEl = linkRowEl;
 
-            document.getElementById('assetPickerTitle').innerText =
-                (type === 'bg') ? 'Elegir Fondo (Asset)'
-                    : (type === 'brand_logo') ? 'Elegir Logo (Asset)'
-                        : 'Elegir Ícono PNG (Asset)';
+      document.getElementById('assetPickerTitle').innerText =
+        (type === 'bg') ? 'Elegir Fondo (Asset)'
+        : (type === 'brand_logo') ? 'Elegir Logo (Asset)'
+        : 'Elegir Ícono PNG (Asset)';
 
-            document.getElementById('assetSearch').value = '';
-            document.getElementById('assetPickerModal').classList.remove('hidden');
-            renderAssetPickerGrid();
-        }
+      document.getElementById('assetSearch').value = '';
+      document.getElementById('assetPickerModal').classList.remove('hidden');
+      renderAssetPickerGrid();
+    }
 
-        function closeAssetPicker() {
-            document.getElementById('assetPickerModal').classList.add('hidden');
-            assetPickerContext = { type: null, linkRowEl: null };
-        }
+    function closeAssetPicker(){
+      document.getElementById('assetPickerModal').classList.add('hidden');
+      assetPickerContext = { type:null, linkRowEl:null };
+    }
 
-        function renderAssetPickerGrid() {
-            const q = document.getElementById('assetSearch').value.trim().toLowerCase();
-            const grid = document.getElementById('assetPickerGrid');
-            grid.innerHTML = '';
+    function renderAssetPickerGrid(){
+      const q = document.getElementById('assetSearch').value.trim().toLowerCase();
+      const grid = document.getElementById('assetPickerGrid');
+      grid.innerHTML = '';
 
-            const list = allAssets.filter(a => {
-                const name = String(a.name || a.id || '').toLowerCase();
-                return !q || name.includes(q);
-            });
+      const list = allAssets.filter(a=>{
+        const name = String(a.name || a.id || '').toLowerCase();
+        return !q || name.includes(q);
+      });
 
-            list.forEach(a => {
-                const btn = document.createElement('button');
-                btn.type = "button";
-                btn.className = "panel r overflow-hidden text-left hover:brightness-110 transition";
-                btn.innerHTML = `
-          <img src="${a.url}" class="w-full h-24 object-cover">
-          <div class="p-2 mini opacity-80 truncate">${escapeHtml(a.name || a.id)}</div>
+      list.forEach(a=>{
+        const btn = document.createElement('button');
+        btn.type = "button";
+        btn.className = "rounded-card2 bg-black/20 overflow-hidden text-left hover:bg-white/10 transition shadow-inset";
+        btn.innerHTML = `
+          <div class="h-24 bg-black/20 flex items-center justify-center">
+            <img src="${a.url}" class="w-full h-full object-contain p-2" alt="">
+          </div>
+          <div class="p-2 text-[11px] text-text-muted truncate">${escapeHtml(a.name || a.id)}</div>
         `;
-                btn.onclick = () => pickAsset(a);
-                grid.appendChild(btn);
-            });
+        btn.onclick = () => pickAsset(a);
+        grid.appendChild(btn);
+      });
 
-            if (list.length === 0) {
-                grid.innerHTML = `<div class="col-span-4 text-xs opacity-60">No hay resultados. Sube assets o cambia búsqueda.</div>`;
-            }
+      if(list.length === 0){
+        grid.innerHTML = `<div class="col-span-full text-xs text-text-muted">No hay resultados. Sube assets o cambia búsqueda.</div>`;
+      }
+    }
+
+    function pickAsset(asset){
+      const url = asset.url;
+
+      if(assetPickerContext.type === 'bg'){
+        document.getElementById('bgType').value = 'image_asset';
+        document.getElementById('bgValue').value = `url("${url}")`;
+
+        document.getElementById('bgAssetSelected').innerText = asset.name || asset.id || assetNameFromUrl(url);
+        toggleBgPickers();
+        syncBgAssetPreview();
+      }else if(assetPickerContext.type === 'icon' && assetPickerContext.linkRowEl){
+        assetPickerContext.linkRowEl.querySelector('.icoType').value = 'asset';
+        toggleIconPicker(assetPickerContext.linkRowEl.querySelector('.icoType'));
+        setLinkIconAsset(assetPickerContext.linkRowEl, url);
+      }else if(assetPickerContext.type === 'brand_logo'){
+        document.getElementById('brandLogoType').value = 'asset';
+        document.getElementById('brandLogoValue').value = url;
+        document.getElementById('brandLogoSelected').innerText = asset.name || asset.id || assetNameFromUrl(url);
+        toggleBrandLogoPickers();
+        syncBrandLogoPreview();
+      }
+
+      closeAssetPicker();
+      livePreview();
+    }
+
+    function syncBgAssetPreview(){
+      const v = document.getElementById('bgValue').value || '';
+      const url = extractUrlFromCssUrl(v);
+
+      const thumb = document.getElementById('bgAssetThumb');
+      const empty = document.getElementById('bgAssetEmpty');
+      const txt   = document.getElementById('bgAssetSelected');
+
+      if(url){
+        thumb.src = url;
+        thumb.classList.remove('hidden');
+        empty.classList.add('hidden');
+        const name = assetNameFromUrl(url);
+        txt.innerText = name || url;
+      }else{
+        thumb.classList.add('hidden');
+        empty.classList.remove('hidden');
+        txt.innerText = 'Ninguno';
+      }
+    }
+
+    // ---------- Save / Delete ----------
+    async function saveScreen(){
+      const payload = collectPayload();
+      const res = await fetch('/api/screens/save',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(payload)
+      });
+      if(res.ok) location.reload();
+      else alert("Error guardando");
+    }
+
+    async function deleteScreen(){
+      const id = document.getElementById('screenId').value;
+      if(!id) return;
+      if(!confirm("¿Eliminar permanentemente esta pantalla?")) return;
+
+      await fetch('/api/screens/delete',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({id})
+      });
+      location.reload();
+    }
+
+    // ---------- Preview (live) ----------
+    function collectPayload(){
+      const rows = document.querySelectorAll('#linksContainer > div.link-row');
+
+      const links = Array.from(rows).map(row=>{
+        const radiusVal = row.querySelector('.stRadius').value;
+
+        const iconType = row.querySelector('.icoType').value;
+        let iconValue = '🔗';
+        if(iconType === 'asset'){
+          iconValue = row.querySelector('.icoValHidden').value || '';
+        }else{
+          iconValue = row.querySelector('.icoVal').value || '🔗';
         }
 
-        function pickAsset(asset) {
-            const url = asset.url;
+        return {
+          label: row.querySelector('.lbl').value,
+          url: row.querySelector('.url').value,
+          icon_type: iconType,
+          icon_value: iconValue,
+          style: {
+            bg: row.querySelector('.stBg').value || null,
+            border: row.querySelector('.stBorder').value || null,
+            text: row.querySelector('.stText').value || null,
+            radius: radiusVal === '' ? null : Number(radiusVal),
+          }
+        };
+      });
 
-            if (assetPickerContext.type === 'bg') {
-                document.getElementById('bgType').value = 'image_asset';
-                document.getElementById('bgValue').value = `url("${url}")`;
+      const logoType = document.getElementById('brandLogoType').value;
+      let logoValue = '';
+      if(logoType === 'emoji'){
+        logoValue = document.getElementById('brandLogoEmoji').value || '✨';
+      }else if(logoType === 'image_url'){
+        logoValue = document.getElementById('brandLogoUrl').value.trim() || '';
+      }else{
+        logoValue = document.getElementById('brandLogoValue').value.trim() || '';
+      }
 
-                document.getElementById('bgAssetSelected').innerText = asset.name || asset.id || assetNameFromUrl(url);
-                toggleBgPickers();
-                syncBgAssetPreview();
-            } else if (assetPickerContext.type === 'icon' && assetPickerContext.linkRowEl) {
-                assetPickerContext.linkRowEl.querySelector('.icoType').value = 'asset';
-                toggleIconPicker(assetPickerContext.linkRowEl.querySelector('.icoType'));
-                setLinkIconAsset(assetPickerContext.linkRowEl, url);
-            } else if (assetPickerContext.type === 'brand_logo') {
-                document.getElementById('brandLogoType').value = 'asset';
-                document.getElementById('brandLogoValue').value = url;
-                document.getElementById('brandLogoSelected').innerText = asset.name || asset.id || assetNameFromUrl(url);
-                toggleBrandLogoPickers();
-                syncBrandLogoPreview();
-            }
+      return {
+        id: document.getElementById('screenId').value || null,
+        folder_id: document.getElementById('screenFolderId').value,
+        title: document.getElementById('screenTitle').value,
+        slug: document.getElementById('screenSlug').value,
 
-            closeAssetPicker();
-            livePreview();
-        }
+        theme: {
+          brand: {
+            title: document.getElementById('brandTitle').value || '',
+            subtitle: document.getElementById('brandSubtitle').value || '',
+            logo_type: logoType,
+            logo_value: logoValue
+          },
 
-        function syncBgAssetPreview() {
-            const v = document.getElementById('bgValue').value || '';
-            const url = extractUrlFromCssUrl(v);
+          bg_type: document.getElementById('bgType').value,
+          bg_value: document.getElementById('bgValue').value,
 
-            const thumb = document.getElementById('bgAssetThumb');
-            const empty = document.getElementById('bgAssetEmpty');
-            const txt = document.getElementById('bgAssetSelected');
+          bg_overlay_opacity: Number(document.getElementById('overlayOpacity').value),
+          bg_overlay_color: document.getElementById('overlayColor').value,
+          bg_blur_px: Number(document.getElementById('bgBlur').value),
+          bg_zoom: Number(document.getElementById('bgZoom').value),
 
-            if (url) {
-                thumb.src = url;
-                thumb.classList.remove('hidden');
-                empty.classList.add('hidden');
-                const name = assetNameFromUrl(url);
-                txt.innerText = name || url;
-            } else {
-                thumb.classList.add('hidden');
-                empty.classList.remove('hidden');
-                txt.innerText = 'Ninguno';
-            }
-        }
+          card_color: document.getElementById('cardColor').value,
+          text_color: document.getElementById('textColor').value,
 
-        // ------------- Save / Delete -------------
-        async function saveScreen() {
-            const payload = collectPayload();
-            const res = await fetch('/api/screens/save', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-            if (res.ok) location.reload();
-            else alert("Error guardando");
-        }
+          btn_bg: document.getElementById('btnBg').value,
+          btn_text: document.getElementById('btnText').value,
+        },
+        links
+      };
+    }
 
-        async function deleteScreen() {
-            const id = document.getElementById('screenId').value;
-            if (!id) return;
-            if (!confirm("¿Eliminar permanentemente esta pantalla?")) return;
-
-            await fetch('/api/screens/delete', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id })
-            });
-            location.reload();
-        }
-
-        // ------------- Preview (live) -------------
-        function collectPayload() {
-            const rows = document.querySelectorAll('#linksContainer > div.link-row');
-
-            const links = Array.from(rows).map(row => {
-                const radiusVal = row.querySelector('.stRadius').value;
-
-                const iconType = row.querySelector('.icoType').value;
-                let iconValue = '🔗';
-                if (iconType === 'asset') {
-                    iconValue = row.querySelector('.icoValHidden').value || '';
-                } else {
-                    iconValue = row.querySelector('.icoVal').value || '🔗';
-                }
-
-                return {
-                    label: row.querySelector('.lbl').value,
-                    url: row.querySelector('.url').value,
-                    icon_type: iconType,
-                    icon_value: iconValue,
-                    style: {
-                        bg: row.querySelector('.stBg').value || null,
-                        border: row.querySelector('.stBorder').value || null,
-                        text: row.querySelector('.stText').value || null,
-                        radius: radiusVal === '' ? null : Number(radiusVal),
-                    }
-                };
-            });
-
-            const logoType = document.getElementById('brandLogoType').value;
-            let logoValue = '';
-            if (logoType === 'emoji') {
-                logoValue = document.getElementById('brandLogoEmoji').value || '✨';
-            } else if (logoType === 'image_url') {
-                logoValue = document.getElementById('brandLogoUrl').value.trim() || '';
-            } else {
-                logoValue = document.getElementById('brandLogoValue').value.trim() || '';
-            }
-
-            return {
-                id: document.getElementById('screenId').value || null,
-                folder_id: document.getElementById('screenFolderId').value,
-                title: document.getElementById('screenTitle').value,
-                slug: document.getElementById('screenSlug').value,
-
-                theme: {
-                    brand: {
-                        title: document.getElementById('brandTitle').value || '',
-                        subtitle: document.getElementById('brandSubtitle').value || '',
-                        logo_type: logoType,
-                        logo_value: logoValue
-                    },
-
-                    bg_type: document.getElementById('bgType').value,
-                    bg_value: document.getElementById('bgValue').value,
-
-                    bg_overlay_opacity: Number(document.getElementById('overlayOpacity').value),
-                    bg_overlay_color: document.getElementById('overlayColor').value,
-                    bg_blur_px: Number(document.getElementById('bgBlur').value),
-                    bg_zoom: Number(document.getElementById('bgZoom').value),
-
-                    card_color: document.getElementById('cardColor').value,
-                    text_color: document.getElementById('textColor').value,
-
-                    btn_bg: document.getElementById('btnBg').value,
-                    btn_text: document.getElementById('btnText').value,
-                },
-                links
-            };
-        }
-
-        let previewTimer = null;
-        async function livePreview() {
-            if (previewTimer) clearTimeout(previewTimer);
-            previewTimer = setTimeout(async () => {
-                const payload = collectPayload();
-                const res = await fetch('/api/screens/preview', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                const html = await res.text();
-                document.getElementById('previewFrame').srcdoc = html;
-            }, 150);
-        }
-
-        // ------------- Init -------------
-        document.addEventListener('DOMContentLoaded', async () => {
-            const first = document.querySelector('.folder-item');
-            if (first) {
-                selectFolder(first.getAttribute('data-id'), first);
-            } else {
-                renderScreens();
-            }
-            renderAssetsSidebar();
-
-            // ✅ NO forzar applyGradient aquí
-            // toggleBgPickers se encargará cuando abras modal
+    let previewTimer = null;
+    async function livePreview(){
+      if(previewTimer) clearTimeout(previewTimer);
+      previewTimer = setTimeout(async ()=>{
+        const payload = collectPayload();
+        const res = await fetch('/api/screens/preview',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify(payload)
         });
+        const html = await res.text();
+        document.getElementById('previewFrame').srcdoc = html;
+      }, 150);
+    }
 
-        // ------------- Utils -------------
-        function escapeHtml(s) {
-            return String(s ?? '')
-                .replaceAll('&', '&amp;')
-                .replaceAll('<', '&lt;')
-                .replaceAll('>', '&gt;')
-                .replaceAll('"', '&quot;')
-                .replaceAll("'", "&#39;");
-        }
-        function escapeAttr(s) { return escapeHtml(s); }
-    </script>
+    // ---------- Init ----------
+    document.addEventListener('DOMContentLoaded', async ()=>{
+      const first = document.querySelector('.folder-item');
+      if(first){
+        selectFolder(first.getAttribute('data-id'), first);
+      }else{
+        renderScreens();
+      }
+      renderAssetsSidebar();
+    });
+
+    // ---------- Utils ----------
+    function escapeHtml(s){
+      return String(s ?? '')
+        .replaceAll('&','&amp;')
+        .replaceAll('<','&lt;')
+        .replaceAll('>','&gt;')
+        .replaceAll('"','&quot;')
+        .replaceAll("'","&#39;");
+    }
+    function escapeAttr(s){ return escapeHtml(s); }
+  </script>
 </body>
-
 </html>

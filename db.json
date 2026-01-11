@@ -7,9 +7,62 @@
     {
       "id": "e3735ffd",
       "name": "nueva"
+    },
+    {
+      "id": "ed42d215",
+      "name": "fsfs"
     }
   ],
-  "screens": [],
+  "screens": [
+    {
+      "id": "9845b658941f4a11b030da447b9dfb01",
+      "folder_id": "e3735ffd",
+      "slug": "fsfa",
+      "title": "",
+      "theme": {
+        "text_color": "#ffffff",
+        "brand": {
+          "title": "Enlaces",
+          "subtitle": "Síguenos",
+          "logo_type": "emoji",
+          "logo_value": "🔥"
+        },
+        "bg_type": "gradient",
+        "bg_value": "linear-gradient(135deg, #0ea5e9 0%, #8b5cf6 100%)",
+        "bg_overlay_opacity": 0.05,
+        "bg_overlay_color": "#000000",
+        "bg_blur_px": 15,
+        "bg_zoom": 1.25,
+        "card_color": "rgba(255,255,255,0.1)",
+        "card_border": "rgba(255,255,255,0.12)",
+        "card_radius": 16,
+        "btn_bg": "rgba(255,255,255,0.12)",
+        "btn_text": "#ffffff",
+        "btn_border": "rgba(255,255,255,0.14)",
+        "btn_radius": 16
+      },
+      "links": [
+        {
+          "label": "instagram",
+          "url": "",
+          "icon_type": "asset",
+          "icon_value": "/assets/38bd317bc6.webp",
+          "style": {
+            "bg": "linear-gradient(231deg, #0ea5e9 0%, #8b5cf6 100%)",
+            "border": "linear-gradient(231deg, #0ea5e9 0%, #8b5cf6 100%)",
+            "text": null,
+            "radius": null
+          }
+        }
+      ],
+      "brand": {
+        "title": "Enlaces",
+        "subtitle": "Síguenos",
+        "logo_type": "emoji",
+        "logo_value": "🔥"
+      }
+    }
+  ],
   "assets": [
     {
       "id": "833d41b55c",
@@ -27,6 +80,30 @@
       "id": "f4ee85ee0b",
       "name": "dea5259d-a4b6-4a23-9173-c34125a864fd.jpg",
       "url": "/assets/f4ee85ee0b.jpg",
+      "kind": "image"
+    },
+    {
+      "id": "0e5a12ee6b",
+      "name": "6c83d0fc6b.png",
+      "url": "/assets/0e5a12ee6b.png",
+      "kind": "image"
+    },
+    {
+      "id": "38bd317bc6",
+      "name": "Instagram_logo_2022.svg.webp",
+      "url": "/assets/38bd317bc6.webp",
+      "kind": "image"
+    },
+    {
+      "id": "6d2d5c29d6",
+      "name": "2021_Facebook_icon.svg.png",
+      "url": "/assets/6d2d5c29d6.png",
+      "kind": "image"
+    },
+    {
+      "id": "c569fda2c3",
+      "name": "6c83d0fc6b.png",
+      "url": "/assets/c569fda2c3.png",
       "kind": "image"
     }
   ]
